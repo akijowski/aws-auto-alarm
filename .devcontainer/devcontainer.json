@@ -1,0 +1,35 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/ubuntu
+{
+    "name": "AWS-Auto-Alarm",
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu-22.04",
+    "runArgs": [
+        // make sure podman maps properly in a rootless container.  Not needed for Docker.
+		"--userns=keep-id:uid=1000,gid=1000",
+        "--name", "aws_auto_alarm_devcontainer"
+    ],
+    "remoteUser": "vscode",
+    "shutdownAction": "stopContainer",
+    "mounts": [
+		"type=bind,src=${localEnv:HOME}/.aws,dst=/home/vscode/.aws,readonly",
+        "type=bind,src=${localEnv:HOME}/.terraform.d,dst=/home/vscode/.terraform.d,readonly"
+	],
+    "containerEnv": {
+        "AWS_DEFAULT_PROFILE": "adam"
+    },
+    "features": {
+        "ghcr.io/devcontainers-contrib/features/go-task:1": {},
+        "ghcr.io/devcontainers/features/aws-cli:1": {},
+        "ghcr.io/devcontainers/features/terraform:1": {
+            "installTerraformDocs": true,
+            "installTFsec": true
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "hashicorp.terraform"
+            ]
+        }
+    }
+}
