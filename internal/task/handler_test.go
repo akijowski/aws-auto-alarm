@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -175,6 +176,8 @@ func TestAlarmHandler_Handle(t *testing.T) {
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 
+			ctx := zerolog.New(zerolog.NewConsoleWriter(zerolog.ConsoleTestWriter(t))).WithContext(context.Background())
+
 			creators := map[string]AlarmCreator{
 				testChangeDetailService: tc.alarmCreator(t),
 			}
@@ -182,7 +185,7 @@ func TestAlarmHandler_Handle(t *testing.T) {
 			assert := assert.New(t)
 
 			handler := &AlarmHandler{alarmCreators: creators}
-			actual, err := handler.Handle(context.TODO(), tc.event(t))
+			actual, err := handler.Handle(ctx, tc.event(t))
 
 			if tc.wantError {
 				assert.Error(err)
