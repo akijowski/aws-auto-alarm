@@ -1,0 +1,53 @@
+[{
+    "AlarmName": "{{ if .Extra.AlarmPrefix }}{{.Extra.AlarmPrefix}} {{ end }}AWS/SQS DLQ ApproximateNumberOfMessagesVisible > 0 QueueName={{ .Extra.DLQName }}",
+    "AlarmDescription": "This alarm helps to detect if there are messages in {{ .Extra.DLQName }}. For troubleshooting, check the reason that the producer is sending messages.",
+    "ActionsEnabled": true,
+    "ComparisonOperator": "GreaterThanThreshold",
+    "Threshold": 0,
+    "AlarmActions": [{{range .AlarmActions}}"{{.}}"{{end}}],
+    "OKActions": [{{range .OKActions}}"{{.}}"{{end}}],
+    "InsufficientDataActions": [{{range .InsufficientActions}}{{.}}{{end}}],
+    "MetricName": "ApproximateNumberOfMessagesVisible",
+    "Namespace": "AWS/SQS",
+    "Statistic": "Sum",
+    "Period": 60,
+    "Dimensions": [{
+        "Name": "QueueName",
+        "Value": "{{ .Extra.DLQName }}"
+    }],
+    "EvaluationPeriods": 15,
+    "DatapointsToAlarm": 15,
+    "TreatMissingData": "missing",
+    "Tags": [
+        {
+            "Key": "AWS_AUTO_ALARM_MANAGED",
+            "Value": "true"
+        }
+    ]
+},{
+    "AlarmName": "{{ if .Extra.AlarmPrefix }}{{.Extra.AlarmPrefix}} {{ end }}AWS/SQS ApproximateNumberOfMessagesVisible > 100 QueueName={{ .Extra.QueueName }}",
+    "AlarmDescription": "This alarm watches for the message queue backlog to be bigger than expected, indicating that consumers are too slow or there are not enough consumers.  Consider increasing the consumer count or speeding up consumers, if this alarm goes into ALARM state.",
+    "ActionsEnabled": true,
+    "ComparisonOperator": "GreaterThanThreshold",
+    "Threshold": 100,
+    "AlarmActions": [{{range .AlarmActions}}"{{.}}"{{end}}],
+    "OKActions": [{{ range .OKActions }}"{{ . }}"{{end}}],
+    "InsufficientDataActions": [{{range .InsufficientActions}}{{.}}{{end}}],
+    "MetricName": "ApproximateNumberOfMessagesVisible",
+    "Namespace": "AWS/SQS",
+    "Statistic": "Sum",
+    "Period": 60,
+    "Dimensions": [{
+        "Name": "QueueName",
+        "Value": "{{ .Extra.QueueName }}"
+    }],
+    "EvaluationPeriods": 15,
+    "DatapointsToAlarm": 15,
+    "TreatMissingData": "missing",
+    "Tags": [
+        {
+            "Key": "AWS_AUTO_ALARM_MANAGED",
+            "Value": "true"
+        }
+    ]
+}]
