@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"os"
 
@@ -11,43 +12,72 @@ import (
 )
 
 var (
-	flagDryRun = flag.Bool("dry-run", false, "whether to update the cloudwatch alarms")
+	flagFile = flag.String("file", "", "read command options from a file")
 )
 
-func main() {
-	log := zerolog.New(zerolog.NewConsoleWriter()).With().Timestamp().Logger()
+type cmdConfig struct {
+	Quiet        bool     `json:"quiet"`
+	IsDryRun     bool     `json:"isDryRun"`
+	AlarmPrefix  string   `json:"alarmPrefix"`
+	ARN          string   `json:"arn"`
+	IsDelete     bool     `json:"delete"`
+	OKActions    []string `json:"okActions"`
+	AlarmActions []string `json:"alarmActions"`
+}
 
+func main() {
 	flag.Parse()
 
-	ctx := context.Background()
+	log := zerolog.New(zerolog.NewConsoleWriter()).With().Timestamp().Logger()
 
-	if len(os.Args) < 2 {
-		log.Fatal().Msg("missing ARN as an argument")
+	config := new(cmdConfig)
+
+	if *flagFile != "" {
+		configFile, err := os.ReadFile(*flagFile)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to open file")
+		}
+
+		err = json.Unmarshal(configFile, &config)
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to parse configuration")
+		}
 	}
-	arn := flag.Arg(0)
-	if !awsarn.IsARN(arn) {
-		log.Fatal().Str("arg", arn).Msg("ARN is not valid")
+
+	if config.Quiet {
+		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	}
 
-	ctx = log.With().Str("arn", arn).Logger().WithContext(ctx)
+	log.Debug().Interface("config", config).Msg("configuration created")
 
-	opts := []alarm.DataOptionFunc{
-		alarm.AddServiceData,
-		alarm.WithOKActions("arn:aws:sns:us-east-2:0123456789012:topic/foo"),
-	}
-
-	data, err := alarm.FromARN(ctx, arn, opts...)
+	arn, err := awsarn.Parse(config.ARN)
 	if err != nil {
-		log.Fatal().Ctx(ctx).Err(err).Send()
+		log.Fatal().Err(err).Msg("unable to parse ARN")
 	}
 
-	if *flagDryRun {
-		err = alarm.WithData(data)(os.Stdout)
+	log.Debug().Interface("arn", arn).Msg("parsed ARN")
+
+	if config.IsDryRun {
+		write, err := alarm.NewWriter(arn, config.IsDelete, with(config))
+		if err != nil {
+			log.Fatal().Err(err).Msg("unable to create writer")
+		}
+
+		err = write(os.Stdout)
+		if err != nil {
+			log.Fatal().Err(err).Send()
+		}
 	} else {
-		err = alarm.WriteToCloudwatch(ctx, nil, alarm.WithData(data))
+		err = alarm.UpdateCloudwatch(context.TODO(), nil, arn, config.IsDelete, with(config))
+		if err != nil {
+			log.Fatal().Err(err).Send()
+		}
 	}
+}
 
-	if err != nil {
-		log.Fatal().Ctx(ctx).Err(err).Send()
+func with(config *cmdConfig) func(o *alarm.Options) {
+	return func(o *alarm.Options) {
+		o.AlarmActions = config.AlarmActions
+		o.AlarmPrefix = config.AlarmPrefix
 	}
 }

@@ -29,3 +29,10 @@ tasks:
           --mount type=bind,readonly,source=$(pwd)/statefiles/mock/mockconfig.json,destination=/home/StepFunctionsLocal/MockConfigFile.json \
           -e SFN_MOCK_CONFG="/home/StepFunctionsLocal/MockConfigFile.json" \
           amazon/aws-stepfunctions-local:1.14.0
+
+  cmd:test:
+    desc: run a sample file through the command
+    aliases:
+      - ct
+    cmds:
+      - go run ./cmd/aws_auto_alarm --file ./sample_input.json

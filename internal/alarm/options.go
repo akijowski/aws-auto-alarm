@@ -1,19 +1,18 @@
 package alarm
 
-import "context"
-
-func WithOKActions(arns ...string) DataOptionFunc {
-	return func(_ context.Context, d *Data) error {
-		d.OKActions = arns
-
-		return nil
-	}
+// Options are configuration options applied to all generated alarms
+type Options struct {
+	AlarmPrefix  string
+	OKActions    []string
+	AlarmActions []string
 }
 
-func WithAlarmActions(arns ...string) DataOptionFunc {
-	return func(_ context.Context, d *Data) error {
-		d.AlarmActions = arns
+func newOptions(opts ...func(o *Options)) *Options {
+	o := new(Options)
 
-		return nil
+	for _, f := range opts {
+		f(o)
 	}
+
+	return o
 }
