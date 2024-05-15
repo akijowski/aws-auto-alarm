@@ -1,0 +1,7 @@
+{
+    "gopls": {
+        "ui.semanticTokens": true,
+        "ui.noSemanticNumber": true,
+        "ui.noSemanticString": true
+    }
+}
