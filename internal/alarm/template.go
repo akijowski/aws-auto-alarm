@@ -22,32 +22,36 @@ type alarmData struct {
 	Resources   map[string]any
 }
 
-func newAlarmData(arn awsarn.ARN, opt *Options) (*alarmData, error) {
+func newAlarmData(opt *Options) (*alarmData, error) {
 	d := &alarmData{
 		AlarmPrefix: opt.AlarmPrefix,
 	}
 
-	switch arn.Service {
+	awsSvc := opt.ARN.Service
+
+	switch awsSvc {
 	case "sqs":
-		resources, err := sqsResources(arn)
+		resources, err := sqsResources(opt)
 		if err != nil {
 			return nil, err
 		}
 		d.Resources = resources
 	default:
-		return nil, fmt.Errorf("unable to create resource data for service: %s", arn.Service)
+		return nil, fmt.Errorf("unable to create resource data for service: %s", awsSvc)
 	}
 
 	return d, nil
 }
 
-func templatesForARN(arn awsarn.ARN) ([]*template.Template, error) {
-	t, err := template.ParseFS(content, fmt.Sprintf("templates/%s/*", arn.Service))
-	if err != nil {
-		return nil, fmt.Errorf("template parse error: %w", err)
-	}
+func embededTemplatesForARN(arn awsarn.ARN) templateGeneratorFunc {
+	return func() ([]*template.Template, error) {
+		t, err := template.ParseFS(content, fmt.Sprintf("templates/%s/*", arn.Service))
+		if err != nil {
+			return nil, fmt.Errorf("template parse error: %w", err)
+		}
 
-	return t.Templates(), nil
+		return t.Templates(), nil
+	}
 }
 
 func templateAlarm(tmpl *template.Template, opt *Options, d *alarmData) (*cloudwatch.PutMetricAlarmInput, error) {

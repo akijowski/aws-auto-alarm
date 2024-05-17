@@ -3,15 +3,20 @@ package alarm
 import (
 	"fmt"
 	"strings"
-
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 )
 
-func sqsResources(arn awsarn.ARN) (map[string]any, error) {
-	queueName := strings.SplitN(arn.Resource, "/", 2)[1]
+func sqsResources(opt *Options) (map[string]any, error) {
+	resources := make(map[string]any)
 
-	return map[string]any{
-		"DLQName":   fmt.Sprintf("%s-dlq", queueName),
-		"QueueName": queueName,
-	}, nil
+	queueName := strings.SplitN(opt.ARN.Resource, "/", 2)[1]
+	dlqName := fmt.Sprintf("%s-dlq", queueName)
+
+	if dlqNameOverride, ok := opt.Overrides["SQS_DLQ_NAME"]; ok {
+		dlqName = dlqNameOverride.(string)
+	}
+
+	resources["DLQName"] = dlqName
+	resources["QueueName"] = queueName
+
+	return resources, nil
 }

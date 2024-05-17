@@ -1,17 +1,18 @@
 package alarm
 
 import (
+	"text/template"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 )
 
+type templateGeneratorFunc func() ([]*template.Template, error)
+
 func alarmBaseFromOptions(opt *Options) *cloudwatch.PutMetricAlarmInput {
-	return &cloudwatch.PutMetricAlarmInput{
+	base := &cloudwatch.PutMetricAlarmInput{
 		ActionsEnabled: aws.Bool(true),
-		OKActions:      opt.OKActions,
-		AlarmActions:   opt.AlarmActions,
 		Tags: []types.Tag{
 			{
 				Key:   aws.String("AWS_AUTO_ALARM_MANAGED"),
@@ -19,17 +20,24 @@ func alarmBaseFromOptions(opt *Options) *cloudwatch.PutMetricAlarmInput {
 			},
 		},
 	}
+
+	if opt != nil {
+		base.OKActions = opt.OKActions
+		base.AlarmActions = opt.AlarmActions
+	}
+
+	return base
 }
 
-func generateAlarms(arn awsarn.ARN, opt *Options) ([]*cloudwatch.PutMetricAlarmInput, error) {
+func generateAlarms(opt *Options, tgen templateGeneratorFunc) ([]*cloudwatch.PutMetricAlarmInput, error) {
 	alarmInputs := make([]*cloudwatch.PutMetricAlarmInput, 0)
 
-	d, err := newAlarmData(arn, opt)
+	d, err := newAlarmData(opt)
 	if err != nil {
 		return nil, err
 	}
 
-	tmpls, err := templatesForARN(arn)
+	tmpls, err := tgen()
 	if err != nil {
 		return nil, err
 	}

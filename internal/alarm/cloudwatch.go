@@ -3,7 +3,6 @@ package alarm
 import (
 	"context"
 
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 )
 
@@ -20,12 +19,12 @@ type MetricAlarmAPI interface {
 	DeleteAlarmsAPI
 }
 
-func UpdateCloudwatch(ctx context.Context, client MetricAlarmAPI, arn awsarn.ARN, delete bool, opts ...func(o *Options)) error {
+func UpdateCloudwatch(ctx context.Context, client MetricAlarmAPI, delete bool, opts ...func(o *Options)) error {
 	var err error
 
 	opt := newOptions(opts...)
 
-	alarms, err := generateAlarms(arn, opt)
+	alarms, err := generateAlarms(opt, embededTemplatesForARN(opt.ARN))
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,9 @@
+{
+    "quiet": true,
+    "dryRun": true,
+    "delete": false,
+    "ARN": "arn:aws:sqs:us-east-1:0123456789012:queue/test-queue",
+    "alarmActions": [
+        "arn:aws:sns:us-east-1:0123456789012:topic/Foo"
+    ]
+}

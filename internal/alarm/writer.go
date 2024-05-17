@@ -4,16 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 )
 
 type writeFunc func(wr io.Writer) error
 
-func NewWriter(arn awsarn.ARN, delete bool, opts ...func(o *Options)) (writeFunc, error) {
+func NewWriter(delete bool, opts ...func(o *Options)) (writeFunc, error) {
 	opt := newOptions(opts...)
 
-	alarms, err := generateAlarms(arn, opt)
+	alarms, err := generateAlarms(opt, embededTemplatesForARN(opt.ARN))
 	if err != nil {
 		return nil, err
 	}

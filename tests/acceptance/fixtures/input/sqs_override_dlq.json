@@ -1,0 +1,11 @@
+{
+    "quiet": true,
+    "dryRun": true,
+    "ARN": "arn:aws:sqs:us-east-1:0123456789012:queue/test-queue",
+    "alarmActions": [
+        "arn:aws:sns:us-east-1:0123456789012:topic/Foo"
+    ],
+    "overrides": {
+        "SQS_DLQ_NAME": "new-queue"
+    }
+}

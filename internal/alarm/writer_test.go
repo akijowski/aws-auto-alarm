@@ -9,7 +9,7 @@ import (
 	"text/template"
 )
 
-func TestValidTemplates(t *testing.T) {
+func TestValidJSONTemplates(t *testing.T) {
 	cases := []struct {
 		serviceName string
 		data        *alarmData
