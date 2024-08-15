@@ -5,15 +5,6 @@ silent: true
 tasks:
   default: task --list
 
-  terminal:
-    desc: open a terminal in the dev container
-    aliases:
-      - shell
-      - sh
-      - zsh
-    cmds:
-      - docker exec -it -w /workspaces/aws-auto-alarm -u vscode aws_auto_alarm_devcontainer /usr/bin/zsh
-
   step-functions-local:
     desc: run step functions locally
     aliases:
@@ -35,4 +26,4 @@ tasks:
     aliases:
       - ct
     cmds:
-      - go run ./cmd/aws_auto_alarm --file ./sample_input.json
+      - go run ./cmd/aws_auto_alarm --file ./sample_cli_input.json
