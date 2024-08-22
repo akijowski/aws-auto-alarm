@@ -25,6 +25,26 @@ type Config struct {
 	parsedARN    awsarn.ARN
 }
 
+// Run(ctx, <pkg>.Config, wr io.Writer) error
+// newCommandFromConfig
+// err = <pkg2>.execute(cmd)
+
+// for 1 ARN
+// to update:
+// parse ARN
+// parse templates for ARN.Service
+// generate template input for Config
+// generate cw api inputs from templates
+// apply inputs to cw api
+//
+// to delete:
+// parse ARN
+// parse templates for ARN.Service
+// generate template input for Config
+// generate cw api inputs from templates
+// reduce to alarm names
+// apply names to cw api
+
 // Run executes the CLI using the provided Config.
 // If Config.DryRun is true, program output will be sent to the provided io.Writer.
 // Otherwise, an AWS client will be created.

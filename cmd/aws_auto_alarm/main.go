@@ -14,6 +14,9 @@ import (
 func main() {
 	ctx := zerolog.New(zerolog.NewConsoleWriter()).With().Timestamp().Logger().WithContext(context.Background())
 
+	// <pkg>.NewCLIConfig(ctx)
+	// cli.Run(ctx, cfg, os.Stdout)
+
 	config := initConfig(ctx)
 
 	if config.Quiet {
