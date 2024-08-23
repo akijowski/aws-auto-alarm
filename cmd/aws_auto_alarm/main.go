@@ -4,53 +4,37 @@ import (
 	"context"
 	"os"
 
+	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/cli"
+	"github.com/akijowski/aws-auto-alarm/internal/client"
+	"github.com/akijowski/aws-auto-alarm/internal/command"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 func main() {
 	ctx := zerolog.New(zerolog.NewConsoleWriter()).With().Timestamp().Logger().WithContext(context.Background())
 
-	// <pkg>.NewCLIConfig(ctx)
-	// cli.Run(ctx, cfg, os.Stdout)
-
-	config := initConfig(ctx)
+	config := autoalarm.NewConfig(ctx)
 
 	if config.Quiet {
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	}
 
-	log.Ctx(ctx).Debug().Interface("config", config).Msg("configuration created")
-
-	cli.Run(ctx, config, os.Stdout)
-}
-
-func initConfig(ctx context.Context) *cli.Config {
-	pflag.StringP("file", "f", "", "read command options from a file")
-	pflag.BoolP("quiet", "q", false, "set to only log errors")
-
-	pflag.Parse()
-
-	viper.SetEnvPrefix("AWS_AUTO_ALARM")
-	viper.BindPFlags(pflag.CommandLine)
-	viper.AutomaticEnv()
-
-	if viper.IsSet("file") {
-		viper.SetConfigFile(viper.GetString("file"))
+	builder, err := command.Build(ctx, config, nil)
+	if err != nil {
+		zerolog.Ctx(ctx).Fatal().Err(err).Send()
 	}
 
-	if err := viper.ReadInConfig(); err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Send()
+	var cmd autoalarm.Command
+	if config.DryRun {
+		cmd = builder.NewJSONCmd(os.Stdout)
+	} else {
+		cw, err := client.NewCloudWatch(ctx)
+		if err != nil {
+			zerolog.Ctx(ctx).Fatal().Err(err).Send()
+		}
+		cmd = builder.NewCWCmd(cw)
 	}
 
-	config := new(cli.Config)
-
-	if err := viper.Unmarshal(&config); err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Send()
-	}
-
-	return config
+	cli.Run(ctx, cmd)
 }

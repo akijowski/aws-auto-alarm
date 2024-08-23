@@ -5,25 +5,10 @@ package cli
 
 import (
 	"context"
-	"io"
 
-	"github.com/akijowski/aws-auto-alarm/internal/alarm"
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
+	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/rs/zerolog"
 )
-
-// Config is parsed CLI configuration data from flags, variables, or files.
-type Config struct {
-	Quiet        bool           `json:"quiet"`
-	DryRun       bool           `json:"dryRun"`
-	AlarmPrefix  string         `json:"alarmPrefix"`
-	ARN          string         `json:"arn"`
-	Delete       bool           `json:"delete"`
-	OKActions    []string       `json:"okActions"`
-	AlarmActions []string       `json:"alarmActions"`
-	Overrides    map[string]any `json:"overrides"`
-	parsedARN    awsarn.ARN
-}
 
 // Run(ctx, <pkg>.Config, wr io.Writer) error
 // newCommandFromConfig
@@ -45,49 +30,9 @@ type Config struct {
 // reduce to alarm names
 // apply names to cw api
 
-// Run executes the CLI using the provided Config.
-// If Config.DryRun is true, program output will be sent to the provided io.Writer.
-// Otherwise, an AWS client will be created.
-// Setting Config.Delete will change the output to represent the data required to delete CloudWatch Alarms.
-func Run(ctx context.Context, cfg *Config, wr io.Writer) {
+func Run(ctx context.Context, cmd autoalarm.Command) {
 	log := zerolog.Ctx(ctx)
-
-	arn, err := awsarn.Parse(cfg.ARN)
-	if err != nil {
-		log.Fatal().Err(err).Msg("unable to parse ARN")
-	}
-
-	cfg.parsedARN = arn
-
-	log.Debug().Interface("arn", arn).Msg("parsed ARN")
-
-	if err := alarm.IsValid(arn); err != nil {
-		log.Fatal().Err(err).Msg("ARN is not supported")
-	}
-
-	if cfg.DryRun {
-		writeTo, err := alarm.NewWriter(cfg.Delete, with(cfg))
-		if err != nil {
-			log.Fatal().Err(err).Msg("unable to create writer")
-		}
-
-		err = writeTo(wr)
-		if err != nil {
-			log.Fatal().Err(err).Send()
-		}
-	} else {
-		err = alarm.UpdateCloudwatch(ctx, nil, cfg.Delete, with(cfg))
-		if err != nil {
-			log.Fatal().Err(err).Send()
-		}
-	}
-}
-
-func with(config *Config) func(o *alarm.Options) {
-	return func(o *alarm.Options) {
-		o.ARN = config.parsedARN
-		o.AlarmActions = config.AlarmActions
-		o.AlarmPrefix = config.AlarmPrefix
-		o.Overrides = config.Overrides
+	if err := cmd.Execute(ctx); err != nil {
+		log.Fatal().Err(err).Send()
 	}
 }
