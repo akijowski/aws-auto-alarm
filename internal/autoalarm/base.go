@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 )
 
+// AlarmBase returns a cloudwatch.PutMetricAlarmInput that will be applied to all generated alarms.
 func AlarmBase(cfg *Config) *cloudwatch.PutMetricAlarmInput {
 	base := &cloudwatch.PutMetricAlarmInput{
 		ActionsEnabled: aws.Bool(true),

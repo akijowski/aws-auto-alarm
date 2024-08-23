@@ -21,7 +21,7 @@ type Config struct {
 	OKActions    []string       `json:"okActions"`
 	AlarmActions []string       `json:"alarmActions"`
 	Overrides    map[string]any `json:"overrides"`
-	parsedARN    awsarn.ARN
+	ParsedARN    awsarn.ARN
 }
 
 func NewConfig(ctx context.Context) *Config {
@@ -74,7 +74,7 @@ func parseARN(cfg *Config) error {
 		return fmt.Errorf("unable to parse ARN from config: %w", err)
 	}
 
-	cfg.parsedARN = arn
+	cfg.ParsedARN = arn
 
 	return nil
 }

@@ -5,8 +5,8 @@ import (
 	"os"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/awsclient"
 	"github.com/akijowski/aws-auto-alarm/internal/cli"
-	"github.com/akijowski/aws-auto-alarm/internal/client"
 	"github.com/akijowski/aws-auto-alarm/internal/command"
 	"github.com/rs/zerolog"
 )
@@ -20,7 +20,7 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	}
 
-	builder, err := command.Build(ctx, config, nil)
+	builder, err := command.DefaultBuilder(ctx, config)
 	if err != nil {
 		zerolog.Ctx(ctx).Fatal().Err(err).Send()
 	}
@@ -29,7 +29,7 @@ func main() {
 	if config.DryRun {
 		cmd = builder.NewJSONCmd(os.Stdout)
 	} else {
-		cw, err := client.NewCloudWatch(ctx)
+		cw, err := awsclient.CloudWatch(ctx)
 		if err != nil {
 			zerolog.Ctx(ctx).Fatal().Err(err).Send()
 		}

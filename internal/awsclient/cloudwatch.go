@@ -1,4 +1,4 @@
-package client
+package awsclient
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 )
 
-func NewCloudWatch(ctx context.Context) (*cloudwatch.Client, error) {
+func CloudWatch(ctx context.Context) (*cloudwatch.Client, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, err

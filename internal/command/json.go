@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 )
 
@@ -28,15 +27,7 @@ func (j *JSONCmd) Execute(_ context.Context) error {
 	// refactor duplicates
 	// use json.Encoder
 	if j.isDelete {
-		alarmNames := make([]string, 0)
-		for _, input := range j.inputs {
-			name := aws.ToString(input.AlarmName)
-			alarmNames = append(alarmNames, name)
-		}
-
-		deleteInput := &cloudwatch.DeleteAlarmsInput{AlarmNames: alarmNames}
-
-		b, err := json.Marshal(deleteInput)
+		b, err := json.Marshal(deleteInput(j.inputs))
 		if err != nil {
 			return fmt.Errorf("json error: %w", err)
 		}

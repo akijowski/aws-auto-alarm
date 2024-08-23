@@ -2,6 +2,7 @@ package template
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -22,15 +23,10 @@ type alarmData struct {
 	Resources   map[string]any
 }
 
-type Parser struct {
-	baseAlarm *cloudwatch.PutMetricAlarmInput
-	data      *alarmData
-}
-
-func NewParser(cfg *autoalarm.Config) *Parser {
-	return &Parser{
-		baseAlarm: autoalarm.AlarmBase(cfg),
-		data:      &alarmData{},
+func newAlarmData(ctx context.Context, cfg *autoalarm.Config, m ResourceMapper) *alarmData {
+	return &alarmData{
+		AlarmPrefix: cfg.AlarmPrefix,
+		Resources:   m.Map(ctx),
 	}
 }
 
@@ -43,13 +39,13 @@ func newTemplates(arn awsarn.ARN) ([]*template.Template, error) {
 	return t.Templates(), nil
 }
 
-func (p *Parser) newAlarm(t *template.Template) (*cloudwatch.PutMetricAlarmInput, error) {
+func newAlarm(t *template.Template, data *alarmData, base *cloudwatch.PutMetricAlarmInput) (*cloudwatch.PutMetricAlarmInput, error) {
 	buf := new(bytes.Buffer)
 
 	input := new(cloudwatch.PutMetricAlarmInput)
-	copyAlarmBase(p.baseAlarm, input)
+	copyAlarmBase(base, input)
 
-	if err := t.Execute(buf, p.data); err != nil {
+	if err := t.Execute(buf, data); err != nil {
 		return nil, fmt.Errorf("unable to template alarm: %w", err)
 	}
 

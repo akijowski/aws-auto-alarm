@@ -36,14 +36,7 @@ func (b *Builder) NewCWCmd(api MetricAlarmAPI) *CWCmd {
 
 func (c *CWCmd) Execute(ctx context.Context) error {
 	if c.isDelete {
-		alarmNames := make([]string, 0)
-		for _, input := range c.inputs {
-			alarmNames = append(alarmNames, *input.AlarmName)
-		}
-
-		deleteInput := &cloudwatch.DeleteAlarmsInput{AlarmNames: alarmNames}
-
-		_, err := c.api.DeleteAlarms(ctx, deleteInput)
+		_, err := c.api.DeleteAlarms(ctx, deleteInput(c.inputs))
 		if err != nil {
 			return fmt.Errorf("unable to delete alarms: %w", err)
 		}

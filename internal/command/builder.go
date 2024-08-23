@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/mapping"
+	"github.com/akijowski/aws-auto-alarm/internal/template"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 )
 
@@ -17,11 +19,13 @@ type Builder struct {
 	inputs []*cloudwatch.PutMetricAlarmInput
 }
 
-func Build(ctx context.Context, cfg *autoalarm.Config, l AlarmLoader) (*Builder, error) {
-	b := new(Builder)
-	b.config = cfg
+func DefaultBuilder(ctx context.Context, cfg *autoalarm.Config) (*Builder, error) {
+	b := &Builder{
+		config: cfg,
+	}
 
-	inputs, err := l.Load(ctx)
+	tmplLoader := template.NewFileLoader(ctx, cfg, mapping.NewResources(cfg))
+	inputs, err := tmplLoader.Load(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load alarm input: %w", err)
 	}
