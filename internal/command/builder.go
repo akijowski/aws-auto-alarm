@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
-	"github.com/akijowski/aws-auto-alarm/internal/mapping"
+	"github.com/akijowski/aws-auto-alarm/internal/resources"
 	"github.com/akijowski/aws-auto-alarm/internal/template"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 )
@@ -24,7 +24,7 @@ func DefaultBuilder(ctx context.Context, cfg *autoalarm.Config) (*Builder, error
 		config: cfg,
 	}
 
-	tmplLoader := template.NewFileLoader(ctx, cfg, mapping.NewResources(cfg))
+	tmplLoader := template.NewFileLoader(ctx, cfg, resources.NewMapper(cfg))
 	inputs, err := tmplLoader.Load(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("unable to load alarm input: %w", err)

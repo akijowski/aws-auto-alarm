@@ -1,4 +1,4 @@
-package mapping
+package resources
 
 import (
 	"fmt"
