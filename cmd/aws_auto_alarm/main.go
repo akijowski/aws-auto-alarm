@@ -4,10 +4,11 @@ import (
 	"context"
 	"os"
 
+	"github.com/rs/zerolog"
+
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/awsclient"
 	"github.com/akijowski/aws-auto-alarm/internal/cli"
-	"github.com/rs/zerolog"
 )
 
 func main() {
@@ -24,8 +25,8 @@ func main() {
 		log.Fatal().Err(err).Send()
 	}
 
-	cli := cli.New(config, cw)
-	if err := cli.Run(ctx, os.Stdout); err != nil {
+	c := cli.New(config, cw)
+	if err := c.Run(ctx, os.Stdout); err != nil {
 		log.Fatal().Err(err).Send()
 	}
 }
