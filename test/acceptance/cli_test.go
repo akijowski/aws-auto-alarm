@@ -38,22 +38,85 @@ func TestOutput(t *testing.T) {
 
 			require := require.New(t)
 
-			file, err := os.ReadFile(fmt.Sprintf("./fixtures/input/%s.json", tc.service))
-			require.NoError(err)
-
-			config := new(cli.Config)
-			err = json.Unmarshal(file, &config)
+			config, err := tc.config(t)
 			require.NoError(err)
 
 			buf := new(bytes.Buffer)
 
-			cli.Run(context.Background(), config, buf)
+			ctx := zerolog.New(zerolog.NewConsoleWriter(zerolog.ConsoleTestWriter(t))).
+				With().
+				Caller().
+				Str("arn", config.ParsedARN.String()).
+				Logger().
+				WithContext(context.Background())
 
-			wanted, err := os.ReadFile(fmt.Sprintf("./fixtures/output/%s.json", tc.service))
+			err = cli.New(config, nil).Run(ctx, buf)
+			assert.NoError(t, err)
+
+			b, err := tc.wantBytes(t)
 			require.NoError(err)
 
-			assert.JSONEq(t, string(wanted), buf.String())
+			if config.Delete {
+				wanted := new(cloudwatch.DeleteAlarmsInput)
+				err = json.Unmarshal(b, wanted)
+				require.NoError(err)
+
+				actual := new(cloudwatch.DeleteAlarmsInput)
+				err = json.Unmarshal(buf.Bytes(), actual)
+				require.NoError(err)
+
+				assert.ElementsMatch(t, wanted.AlarmNames, actual.AlarmNames)
+			} else {
+				wanted := make([]*cloudwatch.PutMetricAlarmInput, 0)
+				err = json.Unmarshal(b, &wanted)
+				require.NoError(err)
+
+				actual := make([]*cloudwatch.PutMetricAlarmInput, 0)
+				err = json.Unmarshal(buf.Bytes(), &actual)
+				require.NoError(err)
+
+				assert.ElementsMatch(t, wanted, actual)
+			}
 		})
 	}
 
+}
+
+func configFromTestName(t testing.TB) (*autoalarm.Config, error) {
+	t.Helper()
+
+	fileName := fmt.Sprintf("./fixtures/input/%s.json", strings.SplitN(t.Name(), "/", 2)[1])
+	t.Logf("filename: %s", fileName)
+
+	file, err := os.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	config := new(autoalarm.Config)
+	if err := json.Unmarshal(file, &config); err != nil {
+		return nil, err
+	}
+
+	parsedARN, err := arn.Parse(config.ARN)
+	if err != nil {
+		return nil, err
+	}
+	config.ParsedARN = parsedARN
+
+	return config, nil
+}
+
+func outputFromTestName(t testing.TB) ([]byte, error) {
+	t.Helper()
+
+	fileName := fmt.Sprintf("./fixtures/output/%s.json", strings.SplitN(t.Name(), "/", 2)[1])
+	t.Logf("output filename: %s", fileName)
+
+	file, err := os.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	return file, nil
 }

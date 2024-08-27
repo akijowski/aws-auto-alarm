@@ -21,10 +21,14 @@ type FileLoader struct {
 }
 
 func NewFileLoader(ctx context.Context, cfg *autoalarm.Config, rm ResourceMapper) *FileLoader {
+	log := zerolog.Ctx(ctx)
+	log.Debug().Msg("creating new file loader")
+	data := newAlarmData(ctx, cfg, rm)
+	log.Debug().Interface("alarm_data", data).Msg("alarm data created")
 	return &FileLoader{
 		config:       cfg,
 		baseAlarm:    autoalarm.AlarmBase(cfg),
-		templateData: newAlarmData(ctx, cfg, rm),
+		templateData: data,
 	}
 }
 

@@ -5,6 +5,13 @@ silent: true
 tasks:
   default: task --list
 
+  clean:
+    desc: remove files
+    aliases:
+      - c
+    cmds:
+      - rm -rf ./out
+
   step-functions-local:
     desc: run step functions locally
     aliases:
@@ -27,3 +34,34 @@ tasks:
       - ct
     cmds:
       - go run ./cmd/aws_auto_alarm --file ./sample_cli_input.json
+
+  test:accept:
+    desc: run acceptance tests
+    aliases:
+      - ta
+    vars:
+      GO_VERSION: 1.22
+      GOTESTSUM_VERSION: v1.12.0
+    cmds:
+      - |
+        docker run \
+          --rm \
+          --mount type=bind,source=$(pwd),destination=/app \
+          -w /app \
+          golang:{{ .GO_VERSION }} \
+          go run gotest.tools/gotestsum@{{ .GOTESTSUM_VERSION }} --format pkgname-and-test-fails --junitfile /app/out/test-results.xml -- -v ./test/acceptance
+
+  lint:
+    desc: run linter
+    aliases:
+      - l
+    vars:
+      GOLANGCI_LINT_VERSION: v1.59.1
+    cmds:
+      - |
+        docker run \
+          --rm \
+          --mount type=bind,source=$(pwd),destination=/app \
+          -w /app \
+          golangci/golangci-lint:{{ .GOLANGCI_LINT_VERSION }} \
+          golangci-lint run -v
