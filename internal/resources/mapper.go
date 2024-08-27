@@ -19,6 +19,7 @@ type Mapper struct {
 func NewMapper(cfg *autoalarm.Config) *Mapper {
 	resources := make(map[string]any)
 	fns := []resourceMapFn{
+		tagResources,
 		sqsResources,
 	}
 

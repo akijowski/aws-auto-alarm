@@ -6,27 +6,46 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
-	"github.com/akijowski/aws-auto-alarm/internal/cli"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/cli"
 )
 
 func TestOutput(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
-		service string
+		service   string
+		config    func(testing.TB) (*autoalarm.Config, error)
+		wantBytes func(testing.TB) ([]byte, error)
 	}{
 		{
-			service: "sqs",
+			service:   "sqs",
+			config:    configFromTestName,
+			wantBytes: outputFromTestName,
 		},
 		{
-			service: "sqs_delete",
+			service:   "sqs_delete",
+			config:    configFromTestName,
+			wantBytes: outputFromTestName,
 		},
 		{
-			service: "sqs_override_dlq",
+			service:   "sqs_override_dlq",
+			config:    configFromTestName,
+			wantBytes: outputFromTestName,
+		},
+		{
+			service:   "tags",
+			config:    configFromTestName,
+			wantBytes: outputFromTestName,
 		},
 	}
 

@@ -13,26 +13,17 @@ import (
 
 // Config is parsed data from flags, variables, or files.
 type Config struct {
-	Quiet        bool           `json:"quiet"`
-	DryRun       bool           `json:"dryRun"`
-	PrettyPrint  bool           `json:"prettyPrint"`
-	AlarmPrefix  string         `json:"alarmPrefix"`
-	ARN          string         `json:"arn"`
-	Delete       bool           `json:"delete"`
-	OKActions    []string       `json:"okActions"`
-	AlarmActions []string       `json:"alarmActions"`
-	Overrides    map[string]any `json:"overrides"`
+	Quiet        bool              `json:"quiet"`
+	DryRun       bool              `json:"dryRun"`
+	PrettyPrint  bool              `json:"prettyPrint"`
+	AlarmPrefix  string            `json:"alarmPrefix"`
+	ARN          string            `json:"arn"`
+	Delete       bool              `json:"delete"`
+	OKActions    []string          `json:"okActions"`
+	AlarmActions []string          `json:"alarmActions"`
+	Overrides    map[string]any    `json:"overrides"`
+	Tags         map[string]string `json:"tags"`
 	ParsedARN    awsarn.ARN
-}
-
-func NewEnvConfig(ctx context.Context) *Config {
-	setEnv()
-	config, err := loadConfig()
-	if err != nil {
-		zerolog.Ctx(ctx).Fatal().Err(err).Msg("unable to read config")
-	}
-
-	return config
 }
 
 func NewCLIConfig(ctx context.Context, pflags *pflag.FlagSet) *Config {

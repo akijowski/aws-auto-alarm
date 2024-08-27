@@ -8,9 +8,11 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
+
+	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 )
 
 var (
@@ -44,6 +46,10 @@ func newAlarm(t *template.Template, data *alarmData, base *cloudwatch.PutMetricA
 
 	input := new(cloudwatch.PutMetricAlarmInput)
 	copyAlarmBase(base, input)
+
+	if tags, ok := data.Resources["Tags"]; ok {
+		input.Tags = append(input.Tags, tags.([]types.Tag)...)
+	}
 
 	if err := t.Execute(buf, data); err != nil {
 		return nil, fmt.Errorf("unable to template alarm: %w", err)
