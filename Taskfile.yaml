@@ -2,6 +2,9 @@ version: 3
 
 silent: true
 
+vars:
+  GO_VERSION: 1.22
+
 tasks:
   default: task --list
 
@@ -11,6 +14,69 @@ tasks:
       - c
     cmds:
       - rm -rf ./out
+
+  lambda:build:
+    desc: build the lambda binary
+    aliases:
+      - lb
+    vars:
+      GOOS: linux
+      GOARCH: amd64
+    silent: false
+    cmds:
+      - mkdir -p out
+      - |
+        docker run \
+          --rm \
+          --mount type=bind,source=$(pwd),destination=/app \
+          -w /app \
+          -e GOOS={{ .GOOS }} \
+          -e GOARCH={{ .GOARCH }} \
+          golang:{{ .GO_VERSION }} \
+          go build -o out/bootstrap ./functions/aws_auto_alarm/...
+
+  lambda:package:
+    desc: package the lambda binary
+    aliases:
+      - lp
+    cmds:
+      - task: lambda:build
+      - |
+        docker run \
+          --rm \
+          --mount type=bind,source=$(pwd),destination=/app \
+          -w /app \
+          golang:{{ .GO_VERSION }} \
+          go run github.com/aws/aws-lambda-go/cmd/build-lambda-zip@v1.47.0 -o out/bootstrap.zip out/bootstrap
+
+  lambda:local:
+    desc: run the lambda locally
+    aliases:
+      - ll
+    cmds:
+      - task: lambda:package
+      - |
+        docker run \
+          --rm \
+          --mount type=bind,source=$(pwd)/out/bootstrap,destination=/var/runtime/bootstrap \
+          -p 9000:8080 \
+          public.ecr.aws/lambda/provided:al2023 \
+          bootstrap
+
+  lambda:local:stop:
+    desc: stop the lambda running locally
+    aliases:
+      - lls
+    cmds:
+      - docker stop $(docker ps -q --filter ancestor=public.ecr.aws/lambda/provided:al2023)
+
+  lambda:local:invoke:
+    desc: invoke the lambda locally
+    aliases:
+      - lli
+    cmds:
+      - |
+        curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @sample_lambda_input.json
 
   step-functions-local:
     desc: run step functions locally
@@ -40,7 +106,6 @@ tasks:
     aliases:
       - ta
     vars:
-      GO_VERSION: 1.22
       GOTESTSUM_VERSION: v1.12.0
     cmds:
       - |
