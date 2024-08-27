@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -15,6 +15,7 @@ import (
 type Config struct {
 	Quiet        bool           `json:"quiet"`
 	DryRun       bool           `json:"dryRun"`
+	PrettyPrint  bool           `json:"prettyPrint"`
 	AlarmPrefix  string         `json:"alarmPrefix"`
 	ARN          string         `json:"arn"`
 	Delete       bool           `json:"delete"`
@@ -24,40 +25,53 @@ type Config struct {
 	ParsedARN    awsarn.ARN
 }
 
-func NewConfig(ctx context.Context) *Config {
-	config, err := initConfiguration()
+func NewEnvConfig(ctx context.Context) *Config {
+	setEnv()
+	config, err := loadConfig()
 	if err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Send()
-	}
-
-	if err := parseARN(config); err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Send()
+		zerolog.Ctx(ctx).Fatal().Err(err).Msg("unable to read config")
 	}
 
 	return config
 }
 
-func initConfiguration() (*Config, error) {
-	pflag.StringP("file", "f", "", "read command options from a file")
-	pflag.BoolP("quiet", "q", false, "set to only log errors")
+func NewCLIConfig(ctx context.Context, pflags *pflag.FlagSet) *Config {
+	log := zerolog.Ctx(ctx)
+	setEnv()
 
-	pflag.Parse()
-
-	viper.SetEnvPrefix("AWS_AUTO_ALARM")
-	viper.BindPFlags(pflag.CommandLine)
-	viper.AutomaticEnv()
+	if err := viper.BindPFlags(pflags); err != nil {
+		log.Fatal().Err(err).Send()
+	}
 
 	if viper.IsSet("file") {
 		viper.SetConfigFile(viper.GetString("file"))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		return nil, err
+		log.Fatal().Err(err).Msg("unable to read config from file")
 	}
 
+	config, err := loadConfig()
+	if err != nil {
+		log.Fatal().Err(err).Msg("unable to read config")
+	}
+
+	return config
+}
+
+func setEnv() {
+	viper.SetEnvPrefix("AWS_AUTO_ALARM")
+	viper.AutomaticEnv()
+}
+
+func loadConfig() (*Config, error) {
 	config := new(Config)
 
 	if err := viper.Unmarshal(&config); err != nil {
+		return nil, err
+	}
+
+	if err := parseARN(config); err != nil {
 		return nil, err
 	}
 

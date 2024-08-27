@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/rs/zerolog"
 )
 
 type PutMetricAlarmAPI interface {
@@ -35,6 +36,7 @@ func (b *Builder) NewCWCmd(api MetricAlarmAPI) *CWCmd {
 }
 
 func (c *CWCmd) Execute(ctx context.Context) error {
+	zerolog.Ctx(ctx).Debug().Msg("writing output to Cloudwatch")
 	if c.isDelete {
 		_, err := c.api.DeleteAlarms(ctx, deleteInput(c.inputs))
 		if err != nil {

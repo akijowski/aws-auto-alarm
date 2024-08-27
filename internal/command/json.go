@@ -3,50 +3,51 @@ package command
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/rs/zerolog"
 )
 
 type JSONCmd struct {
-	inputs   []*cloudwatch.PutMetricAlarmInput
-	isDelete bool
-	writer   io.Writer
+	inputs      []*cloudwatch.PutMetricAlarmInput
+	isDelete    bool
+	prettyPrint bool
+	writer      io.Writer
 }
 
 func (b *Builder) NewJSONCmd(wr io.Writer) *JSONCmd {
 	return &JSONCmd{
-		inputs:   b.inputs,
-		isDelete: b.config.Delete,
-		writer:   wr,
+		inputs:      b.inputs,
+		isDelete:    b.config.Delete,
+		prettyPrint: b.config.PrettyPrint,
+		writer:      wr,
 	}
 }
 
-func (j *JSONCmd) Execute(_ context.Context) error {
-	// refactor duplicates
-	// use json.Encoder
+func (j *JSONCmd) Execute(ctx context.Context) error {
+	zerolog.Ctx(ctx).Debug().Msg("writing output as JSON")
+	if j.inputs == nil {
+		return errors.New("no inputs provided")
+	}
+	if j.writer == nil {
+		return errors.New("no writer provided")
+	}
+
+	encoder := json.NewEncoder(j.writer)
+	if j.prettyPrint {
+		encoder.SetIndent("", "  ")
+	}
+	var err error
 	if j.isDelete {
-		b, err := json.Marshal(deleteInput(j.inputs))
-		if err != nil {
-			return fmt.Errorf("json error: %w", err)
-		}
-
-		_, err = j.writer.Write(b)
-		if err != nil {
-			return fmt.Errorf("write error: %w", err)
-		}
-
+		err = encoder.Encode(deleteInput(j.inputs))
 	} else {
-		b, err := json.Marshal(j.inputs)
-		if err != nil {
-			return fmt.Errorf("json error: %w", err)
-		}
-
-		_, err = j.writer.Write(b)
-		if err != nil {
-			return fmt.Errorf("write error: %w", err)
-		}
+		err = encoder.Encode(j.inputs)
+	}
+	if err != nil {
+		return fmt.Errorf("marshal error: %w", err)
 	}
 
 	return nil

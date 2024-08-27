@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/resources"
 	"github.com/akijowski/aws-auto-alarm/internal/template"
-	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 )
 
 type AlarmLoader interface {
