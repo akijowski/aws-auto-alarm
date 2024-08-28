@@ -28,7 +28,7 @@ Here is how you can modify the sample lambda input:
 2. Run the following command to "stringify" the json using `jq`:
 
 ```bash
-jq -cM < sample_cloudwatch_event.json | pbcopy
+jq -cM < ./samples/lambda/sample_cloudwatch_event.json | pbcopy
 ```
 
-3. Paste the output into the `sample_lambda_input.json` file. Use the "body" field.
+3. Paste the output into the `./samples/lambda/sample_lambda_input.json` file. Use the "body" field.

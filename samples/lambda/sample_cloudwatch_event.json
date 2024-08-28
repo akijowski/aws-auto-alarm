@@ -1,0 +1,25 @@
+{
+  "version": "0",
+  "id": "bddcf1d6-0251-35a1-aab0-adc1fb47c11c",
+  "detail-type": "Tag Change on Resource",
+  "source": "aws.tag",
+  "account": "123456789012",
+  "time": "2018-09-18T20:41:38Z",
+  "region": "us-east-1",
+  "resources": [
+    "arn:aws:sqs:us-east-1:0123456789012:queue/test-queue"
+  ],
+  "detail": {
+    "changed-tag-keys": [
+      "AWS_AUTO_ALARM_ENABLED"
+    ],
+    "service": "sqs",
+    "resource-type": "queue",
+    "version": 1,
+    "tags": {
+      "AWS_AUTO_ALARM_DRYRUN": "true",
+      "AWS_AUTO_ALARM_ENABLED": "true",
+      "another-tag": "unused"
+    }
+  }
+}

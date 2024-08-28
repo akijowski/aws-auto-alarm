@@ -1,0 +1,20 @@
+{
+  "Records": [
+    {
+      "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
+      "receiptHandle": "MessageReceiptHandle",
+      "body": "{\"version\":\"0\",\"id\":\"bddcf1d6-0251-35a1-aab0-adc1fb47c11c\",\"detail-type\":\"Tag Change on Resource\",\"source\":\"aws.tag\",\"account\":\"123456789012\",\"time\":\"2018-09-18T20:41:38Z\",\"region\":\"us-east-1\",\"resources\":[\"arn:aws:sqs:us-east-1:0123456789012:queue/test-queue\"],\"detail\":{\"changed-tag-keys\":[\"AWS_AUTO_ALARM_ENABLED\"],\"service\":\"sqs\",\"resource-type\":\"queue\",\"version\":1,\"tags\":{\"AWS_AUTO_ALARM_DRYRUN\":\"true\",\"AWS_AUTO_ALARM_ENABLED\":\"true\",\"another-tag\":\"unused\"}}}\n",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1523232000000",
+        "SenderId": "123456789012",
+        "ApproximateFirstReceiveTimestamp": "1523232000001"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "7b270e59b47ff90a553787216d55d91d",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:us-east-1:123456789012:MyQueue",
+      "awsRegion": "us-east-1"
+    }
+  ]
+}

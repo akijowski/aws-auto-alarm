@@ -12,7 +12,6 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
-	"github.com/akijowski/aws-auto-alarm/internal/awsclient"
 	"github.com/akijowski/aws-auto-alarm/internal/command"
 )
 
@@ -22,6 +21,7 @@ const (
 )
 
 type AlarmHandler struct {
+	MetricAPI command.MetricAlarmAPI
 }
 
 func (h *AlarmHandler) Handle(ctx context.Context, event *events.SQSEvent) (*events.SQSEventResponse, error) {
@@ -30,15 +30,9 @@ func (h *AlarmHandler) Handle(ctx context.Context, event *events.SQSEvent) (*eve
 		Logger()
 	log.Info().Msg("Received SQS event")
 
-	cw, err := awsclient.CloudWatch(ctx)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create CloudWatch client")
-		return nil, err
-	}
-
 	// do this for now, make better later
 	for _, record := range event.Records {
-		if err := handleSQSRecord(ctx, cw, record); err != nil {
+		if err := handleSQSRecord(ctx, h.MetricAPI, record); err != nil {
 			log.Error().Str("sqs_message_id", record.MessageId).Err(err).Msg("Failed to process SQS record")
 			return nil, err
 		}
@@ -88,6 +82,7 @@ func buildAndRun(ctx context.Context, api command.MetricAlarmAPI, wr io.Writer, 
 	if err != nil {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
+	zerolog.Ctx(ctx).Info().Interface("config", config).Msg("Created config")
 
 	builder, err := command.DefaultBuilder(ctx, config)
 	if err != nil {

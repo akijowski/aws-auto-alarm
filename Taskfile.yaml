@@ -76,7 +76,7 @@ tasks:
       - lli
     cmds:
       - |
-        curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @sample_lambda_input.json
+        curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @samples/lambda/sample_lambda_input.json
 
   step-functions-local:
     desc: run step functions locally
@@ -99,7 +99,7 @@ tasks:
     aliases:
       - ct
     cmds:
-      - go run ./cmd/aws_auto_alarm --file ./sample_cli_input.json
+      - go run ./cmd/aws_auto_alarm --file ./samples/cli/sample_cli_input.json
 
   test:accept:
     desc: run acceptance tests
