@@ -33,7 +33,7 @@ func main() {
 	}
 
 	c := cli.New(config, cw)
-	if err := c.Run(ctx, os.Stdout); err != nil {
+	if err = c.Run(ctx, os.Stdout); err != nil {
 		log.Fatal().Err(err).Send()
 	}
 }

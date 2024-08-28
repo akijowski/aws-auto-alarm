@@ -3,7 +3,7 @@
     {
       "messageId": "19dd0b57-b21e-4ac1-bd88-01bbb068cb78",
       "receiptHandle": "MessageReceiptHandle",
-      "body": "{\"type\":\"ban\",\"subject\":\"sgid:1234\",\"body\": {}}",
+      "body": "{\"version\":\"0\",\"id\":\"bddcf1d6-0251-35a1-aab0-adc1fb47c11c\",\"detail-type\":\"Tag Change on Resource\",\"source\":\"aws.tag\",\"account\":\"123456789012\",\"time\":\"2018-09-18T20:41:38Z\",\"region\":\"us-east-1\",\"resources\":[\"arn:aws:ec2:us-east-1:123456789012:instance/i-0000000aaaaaaaaaa\"],\"detail\":{\"changed-tag-keys\":[\"a-new-key\",\"an-updated-key\",\"a-deleted-key\"],\"service\":\"ec2\",\"resource-type\":\"instance\",\"version\":3,\"tags\":{\"a-new-key\":\"tag-value-on-new-key-just-added\",\"an-updated-key\":\"tag-value-was-just-changed\",\"an-unchanged-key\":\"tag-value-still-the-same\"}}}\n",
       "attributes": {
         "ApproximateReceiveCount": "1",
         "SentTimestamp": "1523232000000",

@@ -18,3 +18,17 @@ TODO: This approach has been put on hold in favor of using a big ol' Lambda func
 
 A Lambda function is used to consume EventBridge events off of an SQS queue.
 Each queue message will correspond to a tag resource event, which will trigger the creation or deletion of a CloudWatch Alarm.
+
+### Configure sample input
+
+I don't have anything too fancy right now.
+Here is how you can modify the sample lambda input:
+
+1. Modify the `sample_cloudwatch_event.json` file to include the desired input.
+2. Run the following command to "stringify" the json using `jq`:
+
+```bash
+jq -cM < sample_cloudwatch_event.json | pbcopy
+```
+
+3. Paste the output into the `sample_lambda_input.json` file. Use the "body" field.

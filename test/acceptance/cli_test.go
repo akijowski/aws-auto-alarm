@@ -113,7 +113,7 @@ func configFromTestName(t testing.TB) (*autoalarm.Config, error) {
 	}
 
 	config := new(autoalarm.Config)
-	if err := json.Unmarshal(file, &config); err != nil {
+	if err = json.Unmarshal(file, &config); err != nil {
 		return nil, err
 	}
 
