@@ -124,6 +124,36 @@ Example config:
     "alarmPrefix": "hello"
 }
 ```
+## Terraform
+
+### Initializing
+
+The first step is to initialize the Terraform project.
+Running `terraform init` in the `terraform/apply` directory will prompt for information on the backend configuration:
+
+- s3 bucket name
+- s3 bucket path or key
+
+You must have AWS credentials configured in your environment in order to successfully `terraform init`.
+This includes the `AWS_REGION` environment variable.
+
+Optionally, you can provide these values as command arguments:
+
+```bash
+AWS_REGION=us-east-2 terraform init -backend-config="bucket=<bucket-name>" -backend-config="key=<path>"
+```
+
+### Applying
+
+After initializing the project, you can apply the Terraform by running `terraform apply`.
+
+You will be prompted for variables:
+
+- `project_name` - The name of the project, this impacts the names of the resources created
+- `aws_region` - What region to deploy the S3 bucket and other regional resources into.
+
+You can also provide this information in a `terraform.tfvars` file in the `terraform/apply` directory.
+
 
 ## TODO
 

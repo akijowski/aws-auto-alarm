@@ -22,7 +22,7 @@ tasks:
       - lb
     vars:
       GOOS: linux
-      GOARCH: amd64
+      GOARCH: arm64
     silent: false
     cmds:
       - mkdir -p out
@@ -34,7 +34,7 @@ tasks:
           -e GOOS={{ .GOOS }} \
           -e GOARCH={{ .GOARCH }} \
           golang:{{ .GO_VERSION }} \
-          go build -o out/bootstrap ./functions/aws_auto_alarm/...
+          go build -tags lambda.norpc -o out/bootstrap ./functions/aws_auto_alarm/...
 
   lambda:package:
     desc: package the lambda binary
@@ -61,6 +61,7 @@ tasks:
           --rm \
           --mount type=bind,source=$(pwd)/out/bootstrap,destination=/var/runtime/bootstrap \
           -p 9000:8080 \
+          --platform linux/arm64 \
           -e AWS_REGION \
           -e AWS_DEFAULT_REGION \
           -e AWS_ACCESS_KEY_ID \
@@ -147,3 +148,17 @@ tasks:
           -w /app \
           golangci/golangci-lint:{{ .GOLANGCI_LINT_VERSION }} \
           golangci-lint run -v
+
+  tf-fmt:
+    desc: format terraform files
+    aliases:
+      - tf
+    cmds:
+      - terraform fmt -recursive ./terraform/
+
+  tf-docs:
+    desc: Generate Terraform Docs
+    aliases:
+      - tf-doc
+    cmds:
+      - docker run --rm -v "$(pwd)/terraform:/terraform-docs" -u $(id -u) quay.io/terraform-docs/terraform-docs:0.16.0 /terraform-docs/modules
