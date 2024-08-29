@@ -2,7 +2,7 @@
     "quiet": true,
     "dryRun": true,
     "delete": true,
-    "ARN": "arn:aws:sqs:us-east-1:0123456789012:queue/test-queue",
+    "ARN": "arn:aws:sqs:us-east-1:0123456789012:test-queue",
     "alarmActions": [
         "arn:aws:sns:us-east-1:0123456789012:topic/Foo"
     ],

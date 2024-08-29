@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "lambda_access" {
 
     principals {
       identifiers = ["lambda.amazonaws.com"]
-      type = "Service"
+      type        = "Service"
     }
 
     actions = ["sts:AssumeRole"]
@@ -73,7 +73,7 @@ resource "aws_iam_role" "lambda" {
 }
 
 resource "aws_iam_role_policy" "lambda" {
-  name = "permissions"
+  name   = "permissions"
   policy = data.aws_iam_policy_document.lambda.json
   role   = aws_iam_role.lambda.name
 }

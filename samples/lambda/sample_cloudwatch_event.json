@@ -7,7 +7,7 @@
   "time": "2018-09-18T20:41:38Z",
   "region": "us-east-1",
   "resources": [
-    "arn:aws:sqs:us-east-1:0123456789012:queue/test-queue"
+    "arn:aws:sqs:us-east-1:0123456789012:test-queue"
   ],
   "detail": {
     "changed-tag-keys": [
@@ -15,7 +15,7 @@
     ],
     "service": "sqs",
     "resource-type": "queue",
-    "version": 1,
+    "version": 1.0,
     "tags": {
       "AWS_AUTO_ALARM_DRYRUN": "true",
       "AWS_AUTO_ALARM_ENABLED": "true",

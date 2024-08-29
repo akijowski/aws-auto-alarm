@@ -81,7 +81,7 @@ type tagChangeDetail struct {
 	ChangedTagKeys []string          `json:"changed-tag-keys"`
 	Service        string            `json:"service"`
 	ResourceType   string            `json:"resource-type"`
-	Version        int64             `json:"version"`
+	Version        float64           `json:"version"`
 	Tags           map[string]string `json:"tags"`
 }
 

@@ -2,10 +2,10 @@ package resources
 
 import (
 	"fmt"
-	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
-	"github.com/aws/aws-sdk-go-v2/aws/arn"
 )
 
 func sqsResources(cfg *autoalarm.Config, m map[string]any) {
@@ -18,7 +18,7 @@ func sqsResources(cfg *autoalarm.Config, m map[string]any) {
 }
 
 func queueNames(a arn.ARN, overrides map[string]any) (string, string) {
-	queue := strings.SplitN(a.Resource, "/", 2)[1]
+	queue := a.Resource
 	dlq := fmt.Sprintf("%s-dlq", queue)
 
 	if dlqOverride, ok := overrides["SQS_DLQ_NAME"]; ok {
