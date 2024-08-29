@@ -21,7 +21,8 @@ const (
 )
 
 type AlarmHandler struct {
-	MetricAPI command.MetricAlarmAPI
+	MetricAPI   autoalarm.MetricAlarmAPI
+	ResourceAPI autoalarm.GetResourcesAPI
 }
 
 func (h *AlarmHandler) Handle(ctx context.Context, event *events.SQSEvent) (*events.SQSEventResponse, error) {
@@ -32,7 +33,7 @@ func (h *AlarmHandler) Handle(ctx context.Context, event *events.SQSEvent) (*eve
 
 	// do this for now, make better later
 	for _, record := range event.Records {
-		if err := handleSQSRecord(ctx, h.MetricAPI, record); err != nil {
+		if err := h.handleSQSRecord(ctx, record); err != nil {
 			log.Error().Str("sqs_message_id", record.MessageId).Err(err).Msg("Failed to process SQS record")
 			return nil, err
 		}
@@ -41,7 +42,7 @@ func (h *AlarmHandler) Handle(ctx context.Context, event *events.SQSEvent) (*eve
 	return nil, nil
 }
 
-func handleSQSRecord(ctx context.Context, api command.MetricAlarmAPI, record events.SQSMessage) error {
+func (h *AlarmHandler) handleSQSRecord(ctx context.Context, record events.SQSMessage) error {
 	log := zerolog.Ctx(ctx).With().
 		Str("message_id", record.MessageId).
 		Logger()
@@ -57,7 +58,7 @@ func handleSQSRecord(ctx context.Context, api command.MetricAlarmAPI, record eve
 		return fmt.Errorf("unable to process event: %w", err)
 	}
 
-	return buildAndRun(ctx, api, log, event)
+	return buildAndRun(ctx, h.MetricAPI, log, event)
 }
 
 func filterEvent(event *events.EventBridgeEvent) error {
@@ -77,23 +78,22 @@ func filterEvent(event *events.EventBridgeEvent) error {
 	return nil
 }
 
-func buildAndRun(ctx context.Context, api command.MetricAlarmAPI, wr io.Writer, event *events.EventBridgeEvent) error {
+func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, wr io.Writer, event *events.EventBridgeEvent) error {
 	config, err := autoalarm.NewLambdaConfig(ctx, event)
 	if err != nil {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
 	zerolog.Ctx(ctx).Info().Interface("config", config).Msg("Created config")
 
-	builder, err := command.DefaultBuilder(ctx, config)
-	if err != nil {
-		return fmt.Errorf("unable to create command builder: %w", err)
-	}
-
+	cmdFactory := command.DefaultFactory(ctx, config)
 	var cmd autoalarm.Command
 	if config.DryRun {
-		cmd = builder.NewJSONCmd(wr)
+		cmd, err = cmdFactory.WithWriter(wr)(ctx, config.Delete)
 	} else {
-		cmd = builder.NewCWCmd(api)
+		cmd, err = cmdFactory.WithMetricAPI(api)(ctx, config.Delete)
+	}
+	if err != nil {
+		return fmt.Errorf("unable to create command: %w", err)
 	}
 
 	if err = cmd.Execute(ctx); err != nil {

@@ -14,10 +14,10 @@ import (
 
 type CLI struct {
 	cfg *autoalarm.Config
-	api command.MetricAlarmAPI
+	api autoalarm.MetricAlarmAPI
 }
 
-func New(cfg *autoalarm.Config, api command.MetricAlarmAPI) *CLI {
+func New(cfg *autoalarm.Config, api autoalarm.MetricAlarmAPI) *CLI {
 	return &CLI{
 		cfg: cfg,
 		api: api,
@@ -25,16 +25,16 @@ func New(cfg *autoalarm.Config, api command.MetricAlarmAPI) *CLI {
 }
 
 func (c *CLI) Run(ctx context.Context, wr io.Writer) error {
-	builder, err := command.DefaultBuilder(ctx, c.cfg)
-	if err != nil {
-		return fmt.Errorf("unable to build command: %w", err)
-	}
-
+	cmdFactory := command.DefaultFactory(ctx, c.cfg)
 	var cmd autoalarm.Command
+	var err error
 	if c.cfg.DryRun {
-		cmd = builder.NewJSONCmd(wr)
+		cmd, err = cmdFactory.WithWriter(wr)(ctx, c.cfg.Delete)
 	} else {
-		cmd = builder.NewCWCmd(c.api)
+		cmd, err = cmdFactory.WithMetricAPI(c.api)(ctx, c.cfg.Delete)
+	}
+	if err != nil {
+		return fmt.Errorf("unable to create command: %w", err)
 	}
 
 	return cmd.Execute(ctx)

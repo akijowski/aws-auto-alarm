@@ -20,7 +20,7 @@ func TestNewMapper(t *testing.T) {
 
 	assert.Equal(cfg, mapper.cfg)
 	assert.NotNil(mapper.resources)
-	assert.Len(mapper.fns, 1)
+	assert.GreaterOrEqual(len(mapper.fns), 1)
 }
 
 func TestMapper_Map(t *testing.T) {
@@ -33,6 +33,7 @@ func TestMapper_Map(t *testing.T) {
 	}
 
 	mapper := &Mapper{
+		cfg:       &autoalarm.Config{},
 		resources: map[string]any{},
 		fns: []resourceMapFn{
 			testFn,

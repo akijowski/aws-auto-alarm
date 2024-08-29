@@ -4,6 +4,7 @@ silent: true
 
 vars:
   GO_VERSION: 1.22
+  GOTESTSUM_VERSION: v1.12.0
 
 tasks:
   default: task --list
@@ -60,6 +61,11 @@ tasks:
           --rm \
           --mount type=bind,source=$(pwd)/out/bootstrap,destination=/var/runtime/bootstrap \
           -p 9000:8080 \
+          -e AWS_REGION \
+          -e AWS_DEFAULT_REGION \
+          -e AWS_ACCESS_KEY_ID \
+          -e AWS_SECRET_ACCESS_KEY \
+          -e AWS_SESSION_TOKEN \
           public.ecr.aws/lambda/provided:al2023 \
           bootstrap
 
@@ -101,12 +107,23 @@ tasks:
     cmds:
       - go run ./cmd/aws_auto_alarm --file ./samples/cli/sample_cli_input.json
 
+  test:
+    desc: run all tests
+    aliases:
+      - t
+    cmds:
+      - |
+        docker run \
+          --rm \
+          --mount type=bind,source=$(pwd),destination=/app \
+          -w /app \
+          golang:{{ .GO_VERSION }} \
+          go run gotest.tools/gotestsum@{{ .GOTESTSUM_VERSION }} --format pkgname-and-test-fails --junitfile /app/out/test-results.xml -- -v ./...
+
   test:accept:
     desc: run acceptance tests
     aliases:
       - ta
-    vars:
-      GOTESTSUM_VERSION: v1.12.0
     cmds:
       - |
         docker run \

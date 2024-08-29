@@ -3,21 +3,14 @@ package template
 import (
 	"bytes"
 	"context"
-	"embed"
 	"encoding/json"
 	"fmt"
 	"text/template"
 
-	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
-)
-
-var (
-	//go:embed templates/*
-	content embed.FS
 )
 
 type alarmData struct {
@@ -30,15 +23,6 @@ func newAlarmData(ctx context.Context, cfg *autoalarm.Config, m ResourceMapper) 
 		AlarmPrefix: cfg.AlarmPrefix,
 		Resources:   m.Map(ctx),
 	}
-}
-
-func newTemplates(arn awsarn.ARN) ([]*template.Template, error) {
-	t, err := template.ParseFS(content, fmt.Sprintf("templates/%s/*", arn.Service))
-	if err != nil {
-		return nil, fmt.Errorf("template parse error: %w", err)
-	}
-
-	return t.Templates(), nil
 }
 
 func newAlarm(t *template.Template, data *alarmData, base *cloudwatch.PutMetricAlarmInput) (*cloudwatch.PutMetricAlarmInput, error) {

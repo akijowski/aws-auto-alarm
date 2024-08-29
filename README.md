@@ -24,6 +24,10 @@ The alarm data is then sent to Cloudwatch as an upsert operation `PutMetricAlarm
 
 ## Delete Alarms
 
+The code will currently generate the current alarms based on the ARN and then try to delete them based on the generated names.
+
+**TODO: This is not yet implemented.**
+
 During the delete action, the code will find and delete all alarms that have the following tags:
 
 - `AWS_AUTO_ALARM_MANAGED=true`
