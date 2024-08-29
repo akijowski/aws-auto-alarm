@@ -53,6 +53,8 @@ func (h *AlarmHandler) handleSQSRecord(ctx context.Context, record events.SQSMes
 		return fmt.Errorf("failed to unmarshal event: %w", err)
 	}
 
+	log.Debug().Interface("event", event).Msg("Unmarshalled event")
+
 	log.Info().Str("source", event.Source).Str("detail_type", event.DetailType).Msg("Received EventBridge event")
 	if err := filterEvent(event); err != nil {
 		return fmt.Errorf("unable to process event: %w", err)

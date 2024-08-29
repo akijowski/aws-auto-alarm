@@ -135,11 +135,17 @@ func loadEvent(ctx context.Context, event *events.EventBridgeEvent, config *Conf
 		return fmt.Errorf("unable to unmarshal detail: %w", err)
 	}
 
-	if isDelete(detail) {
-		config.Delete = true
-	}
+	//if isDelete(detail) {
+	//	config.Delete = true
+	//}
 
 	config.ARN = event.Resources[0]
+
+	// put this here for now
+	if enabled, ok := detail.Tags["AWS_AUTO_ALARM_ENABLED"]; !ok || enabled != "true" {
+		log.Warn().Msg("auto alarm is not enabled")
+		return fmt.Errorf("auto alarm is not enabled for event ID: %s", event.ID)
+	}
 
 	dotenv := mapToDotEnv(detail.Tags)
 
@@ -195,8 +201,8 @@ func loadViperConfig(r io.Reader, fileType string, cfg *Config) error {
 
 func isDelete(detail *tagChangeDetail) bool {
 	del := false
-	_, hasTag := detail.Tags["AWS_AUTO_ALARM_MANAGED"]
-	if slices.Contains(detail.ChangedTagKeys, "AWS_AUTO_ALARM_MANAGED") && !hasTag {
+	_, hasTag := detail.Tags["AWS_AUTO_ALARM_ENABLED"]
+	if slices.Contains(detail.ChangedTagKeys, "AWS_AUTO_ALARM_ENABLED") && !hasTag {
 		del = true
 	}
 
