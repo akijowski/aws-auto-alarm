@@ -69,7 +69,7 @@ func TestOutput(t *testing.T) {
 				Logger().
 				WithContext(context.Background())
 
-			err = cli.New(config, nil).Run(ctx, buf)
+			err = cli.New(config, nil, buf).Run(ctx)
 			assert.NoError(t, err)
 
 			b, err := tc.wantBytes(t)

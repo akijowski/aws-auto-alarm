@@ -8,30 +8,51 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/rs/zerolog"
+
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/command"
+	"github.com/akijowski/aws-auto-alarm/internal/template"
 )
 
-type CLI struct {
-	cfg *autoalarm.Config
-	api autoalarm.MetricAlarmAPI
+type DeleteCmdRegistry interface {
+	DeleteCommand(ctx context.Context, cmdType string, finder command.AlarmNameFinder) (autoalarm.Command, error)
 }
 
-func New(cfg *autoalarm.Config, api autoalarm.MetricAlarmAPI) *CLI {
+type CreateCmdRegistry interface {
+	CreateCommand(ctx context.Context, cmdType string, loader command.AlarmLoader) (autoalarm.Command, error)
+}
+
+type CmdRegistry interface {
+	CreateCmdRegistry
+	DeleteCmdRegistry
+}
+
+type CLI struct {
+	cfg  *autoalarm.Config
+	cmds CmdRegistry
+}
+
+func New(cfg *autoalarm.Config, api autoalarm.MetricAlarmAPI, wr io.Writer) *CLI {
 	return &CLI{
-		cfg: cfg,
-		api: api,
+		cfg:  cfg,
+		cmds: command.DefaultRegistry(api, wr),
 	}
 }
 
-func (c *CLI) Run(ctx context.Context, wr io.Writer) error {
-	cmdFactory := command.DefaultFactory(ctx, c.cfg)
-	var cmd autoalarm.Command
-	var err error
+func (c *CLI) Run(ctx context.Context) error {
+	zerolog.Ctx(ctx).
+		Info().
+		Interface("config", c.cfg).
+		Msg("running cli")
+	cmdType := "cloudwatch"
 	if c.cfg.DryRun {
-		cmd, err = cmdFactory.WithWriter(wr)(ctx, c.cfg.Delete)
-	} else {
-		cmd, err = cmdFactory.WithMetricAPI(c.api)(ctx, c.cfg.Delete)
+		cmdType = "json"
+	}
+
+	cmd, err := c.cmds.CreateCommand(ctx, cmdType, template.NewFileLoader(ctx, c.cfg))
+	if c.cfg.Delete {
+		cmd, err = c.cmds.DeleteCommand(ctx, cmdType, template.NewFileFinder(ctx, c.cfg))
 	}
 	if err != nil {
 		return fmt.Errorf("unable to create command: %w", err)

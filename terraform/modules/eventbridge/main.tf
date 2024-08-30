@@ -25,9 +25,7 @@ resource "aws_cloudwatch_event_rule" "this" {
     detail-type = ["Tag Change on Resource"]
     detail = {
       service = var.allowed_services
-      tags = {
-        AWS_AUTO_ALARM_ENABLED = [{ "exists" : true }]
-      }
+      changed-tag-keys = ["AWS_AUTO_ALARM_ENABLED"]
     }
   })
 }

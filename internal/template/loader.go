@@ -2,7 +2,6 @@ package template
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"io/fs"
 	"text/template"
@@ -12,17 +11,11 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/template/resources"
 )
 
-var (
-	//go:embed templates/*
-	content embed.FS
-)
-
-type ResourceMapper interface {
-	Map(ctx context.Context) map[string]any
-}
-
+// FileLoader loads alarm input based on the embedded fs.FS of templates and a base alarm generated with the provided
+// autoalarm.Config.
 type FileLoader struct {
 	config       *autoalarm.Config
 	baseAlarm    *cloudwatch.PutMetricAlarmInput
@@ -30,10 +23,10 @@ type FileLoader struct {
 	templateData *alarmData
 }
 
-func NewFileLoader(ctx context.Context, cfg *autoalarm.Config, rm ResourceMapper) *FileLoader {
+func NewFileLoader(ctx context.Context, cfg *autoalarm.Config) *FileLoader {
 	log := zerolog.Ctx(ctx)
 	log.Debug().Msg("creating new file loader")
-	data := newAlarmData(ctx, cfg, rm)
+	data := newAlarmData(ctx, cfg, resources.NewMapper(cfg))
 	log.Debug().Interface("alarm_data", data).Msg("alarm data created")
 	return &FileLoader{
 		config:       cfg,

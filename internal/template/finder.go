@@ -8,8 +8,11 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/template/resources"
 )
 
+// FileFinder returns a slice of alarm names by applying the autoalarm.Config to the provided templates in the
+// embedded fs.FS.
 type FileFinder struct {
 	config       *autoalarm.Config
 	baseAlarm    *cloudwatch.PutMetricAlarmInput
@@ -17,8 +20,8 @@ type FileFinder struct {
 	templateData *alarmData
 }
 
-func NewFileFinder(ctx context.Context, cfg *autoalarm.Config, rm ResourceMapper) *FileFinder {
-	data := newAlarmData(ctx, cfg, rm)
+func NewFileFinder(ctx context.Context, cfg *autoalarm.Config) *FileFinder {
+	data := newAlarmData(ctx, cfg, resources.NewMapper(cfg))
 	return &FileFinder{
 		config:       cfg,
 		baseAlarm:    autoalarm.AlarmBase(cfg),

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"slices"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/command"
+	"github.com/akijowski/aws-auto-alarm/internal/template"
 )
 
 const (
@@ -60,7 +60,7 @@ func (h *AlarmHandler) handleSQSRecord(ctx context.Context, record events.SQSMes
 		return fmt.Errorf("unable to process event: %w", err)
 	}
 
-	return buildAndRun(ctx, h.MetricAPI, log, event)
+	return buildAndRun(ctx, h.MetricAPI, event)
 }
 
 func filterEvent(event *events.EventBridgeEvent) error {
@@ -80,7 +80,7 @@ func filterEvent(event *events.EventBridgeEvent) error {
 	return nil
 }
 
-func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, wr io.Writer, event *events.EventBridgeEvent) error {
+func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, event *events.EventBridgeEvent) error {
 	log := zerolog.Ctx(ctx)
 	config, err := autoalarm.NewLambdaConfig(ctx, event)
 	if err != nil {
@@ -88,13 +88,16 @@ func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, wr io.Writer
 	}
 	log.Info().Interface("config", config).Msg("Created config")
 
-	// do this better
-	cmdFactory := command.DefaultFactory(ctx, config)
-	var cmd autoalarm.Command
+	cmdRegistry := command.DefaultRegistry(api, log)
+
+	cmdType := "cloudwatch"
 	if config.DryRun {
-		cmd, err = cmdFactory.WithWriter(wr)(ctx, config.Delete)
-	} else {
-		cmd, err = cmdFactory.WithMetricAPI(api)(ctx, config.Delete)
+		cmdType = "json"
+	}
+
+	cmd, err := cmdRegistry.CreateCommand(ctx, cmdType, template.NewFileLoader(ctx, config))
+	if config.Delete {
+		cmd, err = cmdRegistry.DeleteCommand(ctx, cmdType, template.NewFileFinder(ctx, config))
 	}
 	if err != nil {
 		return fmt.Errorf("unable to create command: %w", err)
