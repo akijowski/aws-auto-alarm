@@ -1,7 +1,6 @@
 package autoalarm
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,9 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strings"
 
-	"github.com/aws/aws-lambda-go/events"
 	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/mitchellh/mapstructure"
 	"github.com/rs/zerolog"
@@ -22,6 +19,7 @@ import (
 
 // overrideConfig allows for unmarshalling of a map[string]any
 // https://github.com/spf13/viper/issues/523
+// After replacing viper this may be removed
 type overrideConfig map[string]any
 
 func (c *overrideConfig) UnmarshalText(text []byte) error {
@@ -113,65 +111,6 @@ func NewCLIConfig(ctx context.Context, pflags *pflag.FlagSet) *Config {
 	return config
 }
 
-func NewLambdaConfig(ctx context.Context, event *events.EventBridgeEvent) (*Config, error) {
-	log := zerolog.Ctx(ctx)
-
-	log.Debug().Msg("parsing config from event")
-	config := new(Config)
-
-	if err := loadEvent(ctx, event, config); err != nil {
-		return nil, fmt.Errorf("unable to create lambda config: %w", err)
-	}
-
-	return config, nil
-}
-
-func loadEvent(ctx context.Context, event *events.EventBridgeEvent, config *Config) error {
-	log := zerolog.Ctx(ctx)
-	log.Debug().Msg("loading event")
-	// TODO: instead of the event use the tag detail?
-	detail := new(tagChangeDetail)
-	if err := json.Unmarshal(event.Detail, detail); err != nil {
-		return fmt.Errorf("unable to unmarshal detail: %w", err)
-	}
-
-	//if isDelete(detail) {
-	//	config.Delete = true
-	//}
-
-	config.ARN = event.Resources[0]
-
-	// put this here for now
-	if enabled, ok := detail.Tags["AWS_AUTO_ALARM_ENABLED"]; !ok || enabled != "true" {
-		log.Warn().Msg("auto alarm is not enabled")
-		return fmt.Errorf("auto alarm is not enabled for event ID: %s", event.ID)
-	}
-
-	dotenv := mapToDotEnv(detail.Tags)
-
-	if err := loadViperConfig(dotenv, "dotenv", config); err != nil {
-		return fmt.Errorf("unable to load config from dotenv: %w", err)
-	}
-
-	return nil
-}
-
-func mapToDotEnv(env map[string]string) io.Reader {
-	buf := new(bytes.Buffer)
-	filteredMap := make(map[string]string)
-	for k, v := range env {
-		if nk, ok := strings.CutPrefix(k, "AWS_AUTO_ALARM_"); ok && k != "AWS_AUTO_ALARM_MANAGED" {
-			filteredMap[nk] = v
-		}
-	}
-
-	for k, v := range filteredMap {
-		buf.WriteString(fmt.Sprintf("%s=%s\n", k, v))
-	}
-
-	return buf
-}
-
 func loadViperConfig(r io.Reader, fileType string, cfg *Config) error {
 	if !slices.Contains(viper.SupportedExts, fileType) {
 		return fmt.Errorf("unsupported file type: %s", fileType)
@@ -197,16 +136,6 @@ func loadViperConfig(r io.Reader, fileType string, cfg *Config) error {
 	}
 
 	return nil
-}
-
-func isDelete(detail *tagChangeDetail) bool {
-	del := false
-	_, hasTag := detail.Tags["AWS_AUTO_ALARM_ENABLED"]
-	if slices.Contains(detail.ChangedTagKeys, "AWS_AUTO_ALARM_ENABLED") && !hasTag {
-		del = true
-	}
-
-	return del
 }
 
 func parseARN(cfg *Config) error {

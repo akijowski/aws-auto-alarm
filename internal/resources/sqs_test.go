@@ -3,9 +3,10 @@ package resources
 import (
 	"testing"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 )
 
 func Test_sqsResources(t *testing.T) {
@@ -33,7 +34,7 @@ func Test_sqsResources(t *testing.T) {
 			cfg: &autoalarm.Config{
 				ParsedARN: arn.ARN{
 					Service:  "sqs",
-					Resource: "queue/my-queue",
+					Resource: "my-queue",
 				},
 			},
 			given: map[string]any{},
@@ -66,13 +67,13 @@ func Test_queueNames(t *testing.T) {
 		wantDLQ   string
 	}{
 		"no override dlq is correct": {
-			arn:       arn.ARN{Resource: "queue/my-queue"},
+			arn:       arn.ARN{Resource: "my-queue"},
 			overrides: map[string]any{},
 			wantQueue: "my-queue",
 			wantDLQ:   "my-queue-dlq",
 		},
 		"override dlq is correct": {
-			arn: arn.ARN{Resource: "queue/other-queue"},
+			arn: arn.ARN{Resource: "other-queue"},
 			overrides: map[string]any{
 				"SQS_DLQ_NAME": "use-this-one",
 			},

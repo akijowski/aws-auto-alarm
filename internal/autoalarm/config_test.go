@@ -10,7 +10,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func Test_loadViperConfig(t *testing.T) {
@@ -134,68 +133,6 @@ func Test_loadViperConfig(t *testing.T) {
 			}
 		})
 	}
-}
-
-func Test_mapToDotEnv(t *testing.T) {
-	t.Parallel()
-
-	cases := map[string]struct {
-		givenMap map[string]string
-		want     []byte
-	}{
-		"empty map returns empty string": {
-			givenMap: map[string]string{},
-			want:     []byte{},
-		},
-		"only maps with prefix": {
-			givenMap: map[string]string{"AWS_AUTO_ALARM_OKACTIONS": "foo,bar", "UNUSED": "value"},
-			want:     []byte("OKACTIONS=foo,bar\n"),
-		},
-		"does not map reserved keys": {
-			givenMap: map[string]string{"AWS_AUTO_ALARM_MANAGED": "true", "AWS_AUTO_ALARM_OKACTIONS": "foo,bar"},
-			want:     []byte("OKACTIONS=foo,bar\n"),
-		},
-	}
-
-	for name, tc := range cases {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			r := mapToDotEnv(tc.givenMap)
-
-			got, err := io.ReadAll(r)
-			require.NoError(t, err)
-
-			assert.Equal(t, tc.want, got)
-		})
-	}
-}
-
-func Test_isDelete(t *testing.T) {
-	t.Parallel()
-
-	detail := &tagChangeDetail{
-		ChangedTagKeys: []string{"key"},
-		Tags:           map[string]string{"key": "value"},
-	}
-
-	delDetail := &tagChangeDetail{
-		ChangedTagKeys: []string{"AWS_AUTO_ALARM_MANAGED"},
-		Tags:           map[string]string{"key": "value"},
-	}
-
-	t.Run("managed tag present is not deleted", func(t *testing.T) {
-		t.Parallel()
-
-		assert.False(t, isDelete(detail))
-	})
-
-	t.Run("managed tag missing is deleted", func(t *testing.T) {
-		t.Parallel()
-
-		assert.True(t, isDelete(delDetail))
-	})
 }
 
 func Test_parseARN(t *testing.T) {

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"text/template"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 
@@ -15,12 +17,14 @@ import (
 
 type alarmData struct {
 	AlarmPrefix string
+	ARN         arn.ARN
 	Resources   map[string]any
 }
 
 func newAlarmData(ctx context.Context, cfg *autoalarm.Config, m ResourceMapper) *alarmData {
 	return &alarmData{
 		AlarmPrefix: cfg.AlarmPrefix,
+		ARN:         cfg.ParsedARN,
 		Resources:   m.Map(ctx),
 	}
 }
@@ -30,6 +34,11 @@ func newAlarm(t *template.Template, data *alarmData, base *cloudwatch.PutMetricA
 
 	input := new(cloudwatch.PutMetricAlarmInput)
 	copyAlarmBase(base, input)
+
+	input.Tags = append(input.Tags, types.Tag{
+		Key:   aws.String("AWS_AUTO_ALARM_SOURCE_ARN"),
+		Value: aws.String(data.ARN.String()),
+	})
 
 	if tags, ok := data.Resources["Tags"]; ok {
 		input.Tags = append(input.Tags, tags.([]types.Tag)...)

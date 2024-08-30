@@ -81,12 +81,14 @@ func filterEvent(event *events.EventBridgeEvent) error {
 }
 
 func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, wr io.Writer, event *events.EventBridgeEvent) error {
+	log := zerolog.Ctx(ctx)
 	config, err := autoalarm.NewLambdaConfig(ctx, event)
 	if err != nil {
 		return fmt.Errorf("unable to create config: %w", err)
 	}
-	zerolog.Ctx(ctx).Info().Interface("config", config).Msg("Created config")
+	log.Info().Interface("config", config).Msg("Created config")
 
+	// do this better
 	cmdFactory := command.DefaultFactory(ctx, config)
 	var cmd autoalarm.Command
 	if config.DryRun {
@@ -102,5 +104,6 @@ func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, wr io.Writer
 		return fmt.Errorf("unable to execute command: %w", err)
 	}
 
+	log.Info().Msg("event handling complete")
 	return nil
 }

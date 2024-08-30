@@ -28,6 +28,10 @@
             {
                 "Key": "AWS_AUTO_ALARM_MANAGED",
                 "Value": "true"
+            },
+            {
+                "Key": "AWS_AUTO_ALARM_SOURCE_ARN",
+                "Value": "arn:aws:sqs:us-east-1:0123456789012:test-queue"
             }
         ],
         "Threshold": 0,
@@ -64,6 +68,10 @@
             {
                 "Key": "AWS_AUTO_ALARM_MANAGED",
                 "Value": "true"
+            },
+            {
+                "Key": "AWS_AUTO_ALARM_SOURCE_ARN",
+                "Value": "arn:aws:sqs:us-east-1:0123456789012:test-queue"
             }
         ],
         "Threshold": 100,

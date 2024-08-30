@@ -30,6 +30,10 @@
                 "Value": "true"
             },
             {
+                "Key": "AWS_AUTO_ALARM_SOURCE_ARN",
+                "Value": "arn:aws:sqs:us-east-1:0123456789012:test-queue"
+            },
+            {
                 "Key": "FOO",
                 "Value": "BAR"
             }
@@ -68,6 +72,10 @@
             {
                 "Key": "AWS_AUTO_ALARM_MANAGED",
                 "Value": "true"
+            },
+            {
+                "Key": "AWS_AUTO_ALARM_SOURCE_ARN",
+                "Value": "arn:aws:sqs:us-east-1:0123456789012:test-queue"
             },
             {
                 "Key": "FOO",
