@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type CreateCmd struct {
@@ -34,8 +34,8 @@ func NewDeleteCmd(input *cloudwatch.DeleteAlarmsInput, wr io.Writer) *DeleteCmd 
 }
 
 func (c *CreateCmd) Execute(ctx context.Context) error {
-	log := zerolog.Ctx(ctx)
-	log.Debug().Msg("writing output as JSON")
+	logger := log.Ctx(ctx)
+	logger.Debug().Msg("writing output as JSON")
 
 	encoder := json.NewEncoder(c.wr)
 	encoder.SetIndent("", "  ")
@@ -47,8 +47,8 @@ func (c *CreateCmd) Execute(ctx context.Context) error {
 }
 
 func (d *DeleteCmd) Execute(ctx context.Context) error {
-	log := zerolog.Ctx(ctx)
-	log.Debug().Msg("writing output as JSON")
+	logger := log.Ctx(ctx)
+	logger.Debug().Msg("writing output as JSON")
 
 	encoder := json.NewEncoder(d.wr)
 	encoder.SetIndent("", "  ")

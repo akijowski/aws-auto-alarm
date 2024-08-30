@@ -3,7 +3,7 @@ package resources
 import (
 	"context"
 
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 )
@@ -30,7 +30,7 @@ func NewMapper(cfg *autoalarm.Config) *Mapper {
 }
 
 func (m *Mapper) Map(ctx context.Context) map[string]any {
-	zerolog.Ctx(ctx).Debug().
+	log.Ctx(ctx).Debug().
 		Int("functions_length", len(m.fns)).
 		Bool("has_overrides", len(m.cfg.Overrides) > 0).
 		Interface("overrides", m.cfg.Overrides).

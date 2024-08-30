@@ -12,7 +12,7 @@ import (
 
 	awsarn "github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/mitchellh/mapstructure"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -84,10 +84,10 @@ type tagChangeDetail struct {
 }
 
 func NewCLIConfig(ctx context.Context, pflags *pflag.FlagSet) *Config {
-	log := zerolog.Ctx(ctx)
+	logger := log.Ctx(ctx)
 
 	if err := viper.BindPFlags(pflags); err != nil {
-		log.Fatal().Err(err).Send()
+		logger.Fatal().Err(err).Send()
 	}
 
 	config := new(Config)
@@ -95,16 +95,16 @@ func NewCLIConfig(ctx context.Context, pflags *pflag.FlagSet) *Config {
 	if viper.IsSet("file") {
 		file, err := os.Open(viper.GetString("file"))
 		if err != nil {
-			log.Fatal().Err(err).Send()
+			logger.Fatal().Err(err).Send()
 		}
 		ext := filepath.Ext(file.Name())
 		if err = loadViperConfig(file, ext[1:], config); err != nil {
-			log.Fatal().Err(err).Send()
+			logger.Fatal().Err(err).Send()
 		}
 	} else {
-		log.Warn().Msg("configuration other than file for CLI is not well supported")
+		logger.Warn().Msg("configuration other than file for CLI is not well supported")
 		if err := viper.Unmarshal(config); err != nil {
-			log.Fatal().Err(err).Send()
+			logger.Fatal().Err(err).Send()
 		}
 	}
 

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/command"
@@ -41,7 +41,7 @@ func New(cfg *autoalarm.Config, api autoalarm.MetricAlarmAPI, wr io.Writer) *CLI
 }
 
 func (c *CLI) Run(ctx context.Context) error {
-	zerolog.Ctx(ctx).
+	log.Ctx(ctx).
 		Info().
 		Interface("config", c.cfg).
 		Msg("running cli")

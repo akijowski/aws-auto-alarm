@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 )
@@ -22,8 +22,8 @@ func NewCreateCmd(inputs []*cloudwatch.PutMetricAlarmInput, api autoalarm.PutMet
 }
 
 func (c *CreateCmd) Execute(ctx context.Context) error {
-	log := zerolog.Ctx(ctx)
-	log.Debug().Msg("writing output to Cloudwatch")
+	logger := log.Ctx(ctx)
+	logger.Debug().Msg("writing output to Cloudwatch")
 	for _, in := range c.inputs {
 		_, err := c.api.PutMetricAlarm(ctx, in)
 		if err != nil {
@@ -46,8 +46,8 @@ func NewDeleteCmd(input *cloudwatch.DeleteAlarmsInput, api autoalarm.DeleteAlarm
 }
 
 func (d *DeleteCmd) Execute(ctx context.Context) error {
-	log := zerolog.Ctx(ctx)
-	log.Debug().Msg("writing output to Cloudwatch")
+	logger := log.Ctx(ctx)
+	logger.Debug().Msg("writing output to Cloudwatch")
 	_, err := d.api.DeleteAlarms(ctx, d.input)
 	if err != nil {
 		return err

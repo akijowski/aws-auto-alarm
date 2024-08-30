@@ -9,16 +9,16 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // NewLambdaConfig creates a new Config from an EventBridge event.
 // The event must have a single resource ARN and a detail field that
 // contains the tag change details.
 func NewLambdaConfig(ctx context.Context, event *events.EventBridgeEvent) (*Config, error) {
-	log := zerolog.Ctx(ctx).With().Str("event_id", event.ID).Logger()
+	logger := log.Ctx(ctx)
 
-	log.Debug().Msg("parsing config from event")
+	logger.Debug().Msg("parsing config from event")
 	config := new(Config)
 
 	if len(event.Resources) == 0 {
@@ -45,8 +45,8 @@ func NewLambdaConfig(ctx context.Context, event *events.EventBridgeEvent) (*Conf
 }
 
 func parseDetail(ctx context.Context, cfg *Config, detail *tagChangeDetail) error {
-	log := zerolog.Ctx(ctx)
-	log.Debug().Interface("detail", detail).Msg("processing tag change")
+	logger := log.Ctx(ctx)
+	logger.Debug().Interface("detail", detail).Msg("processing tag change")
 
 	cfg.Delete = isDeleteAction(detail)
 
@@ -66,7 +66,7 @@ func parseDetail(ctx context.Context, cfg *Config, detail *tagChangeDetail) erro
 		}
 	}
 
-	log.Debug().Interface("config", cfg).Msg("configuration complete")
+	logger.Debug().Interface("config", cfg).Msg("configuration complete")
 	return nil
 }
 

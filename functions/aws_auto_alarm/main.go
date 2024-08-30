@@ -14,7 +14,11 @@ import (
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	ctx := zerolog.New(os.Stdout).With().Timestamp().Logger().WithContext(context.Background())
+	ctx := zerolog.New(os.Stdout).
+		With().
+		Timestamp().
+		Logger().
+		WithContext(context.Background())
 
 	logLevel := os.Getenv("AWS_AUTO_ALARM_LOG_LEVEL")
 	switch logLevel {
