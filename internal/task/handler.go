@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
@@ -22,15 +21,6 @@ const (
 	eventbridgeEventDetailType = "Tag Change on Resource"
 )
 
-type LambdaHook struct{}
-
-func (h LambdaHook) Run(e *zerolog.Event, l zerolog.Level, msg string) {
-	ctx := e.GetCtx()
-	if lc, ok := lambdacontext.FromContext(ctx); ok {
-		
-	}
-}
-
 type AlarmHandler struct {
 	MetricAPI   autoalarm.MetricAlarmAPI
 	ResourceAPI autoalarm.GetResourcesAPI
@@ -40,11 +30,16 @@ func (h *AlarmHandler) Handle(ctx context.Context, event *events.SQSEvent) (*eve
 	logger := log.Ctx(ctx).With().
 		Int("sqs_messages_count", len(event.Records)).
 		Logger()
+
+	if lc, ok := lambdacontext.FromContext(ctx); ok {
+		logger = logger.With().Str("aws_request_id", lc.AwsRequestID).Logger()
+	}
+
 	logger.Info().Msg("Received SQS event")
 
 	// do this for now, make better later
 	for _, record := range event.Records {
-		if err := h.handleSQSRecord(ctx, record); err != nil {
+		if err := h.handleSQSRecord(logger.WithContext(ctx), record); err != nil {
 			logger.Error().Str("sqs_message_id", record.MessageId).Err(err).Msg("Failed to process SQS record")
 			return nil, err
 		}
