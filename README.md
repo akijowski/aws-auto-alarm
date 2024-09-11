@@ -160,7 +160,8 @@ You can also provide this information in a `terraform.tfvars` file in the `terra
 Outstanding tasks:
 
 - [ ] Replace viper config with https://github.com/knadh/koanf
-  - [ ] Remove use in lambda config
-  - [ ] Remove use in cli config
+  - [x] Remove use in lambda config
+  - [x] Remove use in cli config
+  - [ ] Use koanf to load from files, flags or vars
 - [ ] Better CLI command parsing
 - [ ] Better naming of config fields
