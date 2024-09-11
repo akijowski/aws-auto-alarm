@@ -12,6 +12,7 @@ import (
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/command"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 	"github.com/akijowski/aws-auto-alarm/internal/template"
 )
 
@@ -29,11 +30,11 @@ type CmdRegistry interface {
 }
 
 type CLI struct {
-	cfg  *autoalarm.Config
+	cfg  *config.Config
 	cmds CmdRegistry
 }
 
-func New(cfg *autoalarm.Config, api autoalarm.MetricAlarmAPI, wr io.Writer) *CLI {
+func New(cfg *config.Config, api autoalarm.MetricAlarmAPI, wr io.Writer) *CLI {
 	return &CLI{
 		cfg:  cfg,
 		cmds: command.DefaultRegistry(api, wr),

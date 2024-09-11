@@ -1,13 +1,15 @@
-package autoalarm
+package template
 
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
+
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
-// AlarmBase returns a cloudwatch.PutMetricAlarmInput that will be applied to all generated alarms.
-func AlarmBase(cfg *Config) *cloudwatch.PutMetricAlarmInput {
+// alarmBase returns a cloudwatch.PutMetricAlarmInput that will be applied to all generated alarms.
+func alarmBase(cfg *config.Config) *cloudwatch.PutMetricAlarmInput {
 	base := &cloudwatch.PutMetricAlarmInput{
 		ActionsEnabled: aws.Bool(true),
 		Tags: []types.Tag{

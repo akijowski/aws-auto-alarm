@@ -7,7 +7,9 @@ import (
 	"slices"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
@@ -19,6 +21,15 @@ const (
 	eventbridgeEventSource     = "aws.tag"
 	eventbridgeEventDetailType = "Tag Change on Resource"
 )
+
+type LambdaHook struct{}
+
+func (h LambdaHook) Run(e *zerolog.Event, l zerolog.Level, msg string) {
+	ctx := e.GetCtx()
+	if lc, ok := lambdacontext.FromContext(ctx); ok {
+		
+	}
+}
 
 type AlarmHandler struct {
 	MetricAPI   autoalarm.MetricAlarmAPI
@@ -56,7 +67,11 @@ func (h *AlarmHandler) handleSQSRecord(ctx context.Context, record events.SQSMes
 	logger = logger.With().Str("event_id", event.ID).Logger()
 	logger.Debug().Interface("event", event).Msg("Unmarshalled event")
 
-	logger.Info().Str("source", event.Source).Str("detail_type", event.DetailType).Msg("Received EventBridge event")
+	logger.Info().
+		Str("source", event.Source).
+		Str("detail_type", event.DetailType).
+		Strs("resources", event.Resources).
+		Msg("Received EventBridge event")
 	if err := filterEvent(event); err != nil {
 		return fmt.Errorf("unable to process event: %w", err)
 	}
@@ -83,7 +98,7 @@ func filterEvent(event *events.EventBridgeEvent) error {
 
 func buildAndRun(ctx context.Context, api autoalarm.MetricAlarmAPI, event *events.EventBridgeEvent) error {
 	logger := log.Ctx(ctx)
-	config, err := autoalarm.NewLambdaConfig(ctx, event)
+	config, err := NewConfig(ctx, event)
 	if err != nil {
 		return fmt.Errorf("unable to create config: %w", err)
 	}

@@ -6,13 +6,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
 func TestNewMapper(t *testing.T) {
 	t.Parallel()
 
-	cfg := &autoalarm.Config{}
+	cfg := &config.Config{}
 
 	mapper := NewMapper(cfg)
 
@@ -32,12 +32,12 @@ func TestMapper_Map(t *testing.T) {
 		t.Parallel()
 
 		fnCalled := 0
-		testFn := func(cfg *autoalarm.Config, m map[string]any) {
+		testFn := func(cfg *config.Config, m map[string]any) {
 			fnCalled++
 			m["test"] = "test"
 		}
 		mapper := &Mapper{
-			cfg:       &autoalarm.Config{},
+			cfg:       &config.Config{},
 			resources: map[string]any{},
 			fns: []resourceMapFn{
 				testFn,
@@ -51,11 +51,11 @@ func TestMapper_Map(t *testing.T) {
 	t.Run("returns mapped resources", func(t *testing.T) {
 		t.Parallel()
 
-		testFn := func(cfg *autoalarm.Config, m map[string]any) {
+		testFn := func(cfg *config.Config, m map[string]any) {
 			m["test"] = "test"
 		}
 		mapper := &Mapper{
-			cfg:       &autoalarm.Config{},
+			cfg:       &config.Config{},
 			resources: map[string]any{},
 			fns: []resourceMapFn{
 				testFn,

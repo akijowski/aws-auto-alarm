@@ -10,27 +10,27 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/rs/zerolog/log"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 	"github.com/akijowski/aws-auto-alarm/internal/template/resources"
 )
 
 // FileLoader loads alarm input based on the embedded fs.FS of templates and a base alarm generated with the provided
-// autoalarm.Config.
+// config.Config.
 type FileLoader struct {
-	config       *autoalarm.Config
+	config       *config.Config
 	baseAlarm    *cloudwatch.PutMetricAlarmInput
 	fs           fs.FS
 	templateData *alarmData
 }
 
-func NewFileLoader(ctx context.Context, cfg *autoalarm.Config) *FileLoader {
+func NewFileLoader(ctx context.Context, cfg *config.Config) *FileLoader {
 	logger := log.Ctx(ctx)
 	logger.Debug().Msg("creating new file loader")
 	data := newAlarmData(ctx, cfg, resources.NewMapper(cfg))
 	logger.Debug().Interface("alarm_data", data).Msg("alarm data created")
 	return &FileLoader{
 		config:       cfg,
-		baseAlarm:    autoalarm.AlarmBase(cfg),
+		baseAlarm:    alarmBase(cfg),
 		templateData: data,
 		fs:           content,
 	}
@@ -45,7 +45,7 @@ func templates(content fs.FS, arn awsarn.ARN) ([]*template.Template, error) {
 	return tmpls.Templates(), nil
 }
 
-// Load parses template.Template from the local file system using the configured autoalarm.Config, base Alarm, and alarmData.
+// Load parses template.Template from the local file system using the configured config.Config, base Alarm, and alarmData.
 func (f *FileLoader) Load(ctx context.Context) ([]*cloudwatch.PutMetricAlarmInput, error) {
 	logger := log.Ctx(ctx)
 	logger.Debug().Msg("loading from file templates")

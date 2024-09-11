@@ -5,18 +5,19 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
-type resourceMapFn func(cfg *autoalarm.Config, m map[string]any)
+type resourceMapFn func(cfg *config.Config, m map[string]any)
 
+// Mapper contains functions to generate the map for alarmData.Resources.
 type Mapper struct {
-	cfg       *autoalarm.Config
+	cfg       *config.Config
 	resources map[string]any
 	fns       []resourceMapFn
 }
 
-func NewMapper(cfg *autoalarm.Config) *Mapper {
+func NewMapper(cfg *config.Config) *Mapper {
 	resources := make(map[string]any)
 	fns := []resourceMapFn{
 		sqsResources,

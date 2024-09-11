@@ -6,19 +6,19 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
 func Test_sqsResources(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
-		cfg    *autoalarm.Config
+		cfg    *config.Config
 		given  map[string]any
 		wanted map[string]any
 	}{
 		"does not modify map when service is not SQS": {
-			cfg: &autoalarm.Config{
+			cfg: &config.Config{
 				ParsedARN: arn.ARN{
 					Service: "dynamodb",
 				},
@@ -31,7 +31,7 @@ func Test_sqsResources(t *testing.T) {
 			},
 		},
 		"adds queue info to map": {
-			cfg: &autoalarm.Config{
+			cfg: &config.Config{
 				ParsedARN: arn.ARN{
 					Service:  "sqs",
 					Resource: "my-queue",

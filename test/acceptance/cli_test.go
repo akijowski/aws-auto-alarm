@@ -15,8 +15,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/cli"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
 func TestOutput(t *testing.T) {
@@ -24,7 +24,7 @@ func TestOutput(t *testing.T) {
 
 	cases := []struct {
 		service   string
-		config    func(testing.TB) (*autoalarm.Config, error)
+		config    func(testing.TB) (*config.Config, error)
 		wantBytes func(testing.TB) ([]byte, error)
 	}{
 		{
@@ -101,7 +101,7 @@ func TestOutput(t *testing.T) {
 
 }
 
-func configFromTestName(t testing.TB) (*autoalarm.Config, error) {
+func configFromTestName(t testing.TB) (*config.Config, error) {
 	t.Helper()
 
 	fileName := fmt.Sprintf("./fixtures/input/%s.json", strings.SplitN(t.Name(), "/", 2)[1])
@@ -112,7 +112,7 @@ func configFromTestName(t testing.TB) (*autoalarm.Config, error) {
 		return nil, err
 	}
 
-	config := new(autoalarm.Config)
+	config := new(config.Config)
 	if err = json.Unmarshal(file, &config); err != nil {
 		return nil, err
 	}

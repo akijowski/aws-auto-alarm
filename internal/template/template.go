@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
 var (
@@ -25,14 +25,19 @@ type ResourceMapper interface {
 	Map(ctx context.Context) map[string]any
 }
 
+// alarmData is what is applied to each alarm template.
 type alarmData struct {
+	// AlarmPrefix is an optional prefix for the alarm name.
 	AlarmPrefix string
-	ARN         arn.ARN
-	Resources   map[string]any
-	Tags        map[string]string
+	// ARN is the ARN of the resource being templated.
+	ARN arn.ARN
+	// Resources is a map of data that can hold specific information based on the ARN resource type.
+	Resources map[string]any
+	// Tags is a map of tags to apply to the alarm.
+	Tags map[string]string
 }
 
-func newAlarmData(ctx context.Context, cfg *autoalarm.Config, m ResourceMapper) *alarmData {
+func newAlarmData(ctx context.Context, cfg *config.Config, m ResourceMapper) *alarmData {
 	return &alarmData{
 		AlarmPrefix: cfg.AlarmPrefix,
 		ARN:         cfg.ParsedARN,

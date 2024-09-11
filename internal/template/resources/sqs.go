@@ -5,10 +5,10 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
+	"github.com/akijowski/aws-auto-alarm/internal/config"
 )
 
-func sqsResources(cfg *autoalarm.Config, m map[string]any) {
+func sqsResources(cfg *config.Config, m map[string]any) {
 	arn := cfg.ParsedARN
 	if arn.Service == "sqs" {
 		queue, dlq := queueNames(arn, cfg.Overrides)

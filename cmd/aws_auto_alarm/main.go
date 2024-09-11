@@ -7,7 +7,6 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 
-	"github.com/akijowski/aws-auto-alarm/internal/autoalarm"
 	"github.com/akijowski/aws-auto-alarm/internal/awsclient"
 	"github.com/akijowski/aws-auto-alarm/internal/cli"
 )
@@ -20,7 +19,7 @@ func main() {
 
 	pflag.Parse()
 
-	config := autoalarm.NewCLIConfig(ctx, pflag.CommandLine)
+	config := cli.NewConfig(ctx, pflag.CommandLine)
 	if config.Quiet {
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	}
