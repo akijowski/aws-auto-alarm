@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/aws/arn"
 	"github.com/rs/zerolog/log"
 
 	"github.com/akijowski/aws-auto-alarm/internal/config"
@@ -33,21 +32,20 @@ func NewConfig(ctx context.Context, event *events.EventBridgeEvent) (*config.Con
 
 	if len(event.Resources) == 0 {
 		return nil, fmt.Errorf("no resources in event")
+	} else {
+		cfg.ARN = event.Resources[0]
 	}
 
-	parsedARN, err := arn.Parse(event.Resources[0])
-	if err != nil {
+	if err := config.ParseARN(cfg); err != nil {
 		return nil, fmt.Errorf("unable to parse ARN: %w", err)
 	}
-	cfg.ARN = event.Resources[0]
-	cfg.ParsedARN = parsedARN
 
 	detail := new(tagChangeDetail)
 	if err := json.Unmarshal(event.Detail, detail); err != nil {
 		return nil, fmt.Errorf("unable to unmarshal detail: %w", err)
 	}
 
-	if err = parseDetail(ctx, cfg, detail); err != nil {
+	if err := parseDetail(ctx, cfg, detail); err != nil {
 		return nil, fmt.Errorf("unable to parse detail: %w", err)
 	}
 
@@ -88,8 +86,6 @@ func parseDetailTags(detailTags map[string]string, cfg *config.Config) {
 			cfg.AlarmPrefix = value
 		case "AWS_AUTO_ALARM_DRYRUN":
 			cfg.DryRun = value == "true"
-		case "AWS_AUTO_ALARM_QUIET":
-			cfg.Quiet = value == "true"
 		}
 	}
 }

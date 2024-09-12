@@ -9,7 +9,6 @@ import (
 
 // Config is parsed data from flags, variables, or files. Well, just a file in this case.
 type Config struct {
-	Quiet        bool              `json:"quiet"`
 	DryRun       bool              `json:"dryRun"`
 	PrettyPrint  bool              `json:"prettyPrint"`
 	AlarmPrefix  string            `json:"alarmPrefix"`

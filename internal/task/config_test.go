@@ -96,7 +96,6 @@ func Test_parseDetail(t *testing.T) {
 					Tags: map[string]string{
 						"AWS_AUTO_ALARM_ALARMPREFIX": "test",
 						"AWS_AUTO_ALARM_DRYRUN":      "true",
-						"AWS_AUTO_ALARM_QUIET":       "true",
 					},
 				}
 			},
@@ -108,7 +107,6 @@ func Test_parseDetail(t *testing.T) {
 			want: &config.Config{
 				AlarmPrefix: "test",
 				DryRun:      true,
-				Quiet:       true,
 				ParsedARN:   defaultQueueARN,
 			},
 		},

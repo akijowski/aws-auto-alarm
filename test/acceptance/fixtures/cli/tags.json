@@ -1,6 +1,5 @@
 {
   "input": {
-    "quiet": true,
     "dryRun": true,
     "delete": false,
     "ARN": "arn:aws:sqs:us-east-1:0123456789012:test-queue",

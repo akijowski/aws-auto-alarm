@@ -19,10 +19,17 @@ func main() {
 
 	pflag.Parse()
 
-	config := cli.NewConfig(ctx, pflag.CommandLine)
-	if config.Quiet {
+	logLevel := os.Getenv("AWS_AUTO_ALARM_LOG_LEVEL")
+	switch logLevel {
+	case "debug":
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	case "warning":
+		zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	case "error":
 		zerolog.SetGlobalLevel(zerolog.ErrorLevel)
 	}
+
+	config := cli.NewConfig(ctx, pflag.CommandLine)
 	ctx = zerolog.Ctx(ctx).With().Str("arn", config.ParsedARN.String()).Logger().WithContext(ctx)
 	log := zerolog.Ctx(ctx)
 

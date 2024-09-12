@@ -4,10 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws/arn"
@@ -103,45 +101,6 @@ func TestOutput(t *testing.T) {
 		})
 	}
 
-}
-
-func configFromTestName(t testing.TB) (*config.Config, error) {
-	t.Helper()
-
-	fileName := fmt.Sprintf("./fixtures/input/%s.json", strings.SplitN(t.Name(), "/", 2)[1])
-	t.Logf("filename: %s", fileName)
-
-	file, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	config := new(config.Config)
-	if err = json.Unmarshal(file, &config); err != nil {
-		return nil, err
-	}
-
-	parsedARN, err := arn.Parse(config.ARN)
-	if err != nil {
-		return nil, err
-	}
-	config.ParsedARN = parsedARN
-
-	return config, nil
-}
-
-func outputFromTestName(t testing.TB) ([]byte, error) {
-	t.Helper()
-
-	fileName := fmt.Sprintf("./fixtures/output/%s.json", strings.SplitN(t.Name(), "/", 2)[1])
-	t.Logf("output filename: %s", fileName)
-
-	file, err := os.ReadFile(fileName)
-	if err != nil {
-		return nil, err
-	}
-
-	return file, nil
 }
 
 func loadTestCase(t testing.TB, fileName string) (*cliTestCase, error) {
