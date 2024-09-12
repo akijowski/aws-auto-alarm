@@ -1,0 +1,20 @@
+{
+  "input": {
+    "quiet": true,
+    "dryRun": true,
+    "delete": true,
+    "ARN": "arn:aws:sqs:us-east-1:0123456789012:test-queue",
+    "alarmActions": [
+      "arn:aws:sns:us-east-1:0123456789012:topic/Foo"
+    ],
+    "okActions": [
+      "arn:aws:sns:us-east-1:0123456789012:topic/Bar"
+    ]
+  },
+  "output": {
+    "AlarmNames": [
+      "AWS/SQS DLQ ApproximateNumberOfMessagesVisible > 0 QueueName=test-queue-dlq",
+      "AWS/SQS ApproximateNumberOfMessagesVisible > 100 QueueName=test-queue"
+    ]
+  }
+}

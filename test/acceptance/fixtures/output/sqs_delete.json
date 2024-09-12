@@ -1,6 +1,0 @@
-{
-    "AlarmNames": [
-        "AWS/SQS DLQ ApproximateNumberOfMessagesVisible > 0 QueueName=test-queue-dlq",
-        "AWS/SQS ApproximateNumberOfMessagesVisible > 100 QueueName=test-queue"
-    ]
-}
